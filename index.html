@@ -1097,8 +1097,8 @@
           <div class="page-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg></div>
           <div class="page-head-text">
             <div class="eyebrow">Module 12</div>
-            <h2>Export your data</h2>
-            <div class="page-sub">Download anything you've logged, to analyze wherever you like.</div>
+            <h2>Export &amp; import</h2>
+            <div class="page-sub">Download anything you've logged, or restore from a previous export — this is how you move data between storage modes.</div>
           </div>
         </div>
 
@@ -1112,6 +1112,13 @@
         <div class="panel">
           <div class="panel-title">Everything at once</div>
           <button class="btn" onclick="exportAllJSON()">⬇ Download all data (JSON)</button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Import data</div>
+          <div class="page-sub" style="margin-top:0;">Restore from a previously exported JSON file. Useful for moving data between storage modes — e.g. export while synced to the cloud, then import after switching to this-device-only mode, or the other way around.</div>
+          <input type="file" id="importFileInput" accept="application/json,.json" onchange="handleImportFile(event)">
+          <div id="importPreview" style="margin-top:12px;"></div>
         </div>
 
         <div class="panel">
@@ -2947,14 +2954,94 @@ function downloadFile(filename, content, mime){
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+const DATA_FIELDS = [
+  { key:'sleep-entries', label:'Sleep', get:()=>S.sleep, set:(v)=>{S.sleep=v||[];} },
+  { key:'fitness-entries', label:'Fitness', get:()=>S.fitness, set:(v)=>{S.fitness=v||[];} },
+  { key:'water-entries', label:'Water', get:()=>S.water, set:(v)=>{S.water=v||[];} },
+  { key:'water-target', label:'Water target (ml)', get:()=>waterTargetVal, set:(v)=>{waterTargetVal=v||3000;} },
+  { key:'mistake-entries', label:'Mistake journal', get:()=>S.mistakes, set:(v)=>{S.mistakes=v||[];} },
+  { key:'todo-items', label:'To-Do', get:()=>S.todos, set:(v)=>{S.todos=v||[];} },
+  { key:'meditation-links', label:'Meditation', get:()=>S.meditation, set:(v)=>{S.meditation=v||[];} },
+  { key:'reading-books', label:'Reading', get:()=>S.books, set:(v)=>{S.books=v||[];} },
+  { key:'habit-defs', label:'Habits', get:()=>S.habits, set:(v)=>{S.habits=v||[];} },
+  { key:'habit-logs', label:'Habit check-ins', get:()=>S.habitLogs, set:(v)=>{S.habitLogs=v||[];} },
+  { key:'gratitude-entries', label:'Gratitude', get:()=>S.gratitude, set:(v)=>{S.gratitude=v||[];} },
+  { key:'goals-list', label:'Goals', get:()=>S.goals, set:(v)=>{S.goals=v||[];} },
+  { key:'budget-transactions', label:'Budget transactions', get:()=>S.budgetTx, set:(v)=>{S.budgetTx=v||[];} },
+  { key:'budget-income', label:'Budget income', get:()=>S.budgetIncome, set:(v)=>{S.budgetIncome=v||[];} },
+  { key:'trading-journal', label:'Trading journal', get:()=>S.tradingJournal, set:(v)=>{S.tradingJournal=v||[];} },
+  { key:'trading-mistakes', label:'Trading mistakes', get:()=>S.tradingMistakes, set:(v)=>{S.tradingMistakes=v||[];} },
+  { key:'trading-portfolio', label:'Trading portfolio', get:()=>S.tradingPortfolio, set:(v)=>{S.tradingPortfolio=v||[];} },
+];
 function exportAllJSON(){
-  const payload = {
-    exported_at: new Date().toISOString(),
-    sleep: S.sleep, fitness: S.fitness, water: S.water, water_target_ml: waterTargetVal,
-    mistakes: S.mistakes, todos: S.todos, meditation: S.meditation, books: S.books
-  };
+  const payload = { exported_at: new Date().toISOString(), app: 'pradip-2.0' };
+  DATA_FIELDS.forEach(f => { payload[f.key] = f.get(); });
   downloadFile('pradip-2.0-data-'+todayStr()+'.json', JSON.stringify(payload, null, 2), 'application/json');
   toast('Full export downloaded.');
+}
+
+let PENDING_IMPORT = null;
+function handleImportFile(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    let data;
+    try{ data = JSON.parse(e.target.result); }
+    catch(err){ toast('That file is not valid JSON.'); return; }
+    PENDING_IMPORT = data;
+    renderImportPreview(data);
+  };
+  reader.onerror = ()=> toast('Could not read that file.');
+  reader.readAsText(file);
+}
+function renderImportPreview(data){
+  const wrap = document.getElementById('importPreview');
+  const matched = DATA_FIELDS.filter(f => data[f.key] !== undefined);
+  if(!matched.length){
+    wrap.innerHTML = '<div class="empty">This file doesn\u2019t look like a Pradip 2.0 export — no recognizable data found.</div>';
+    PENDING_IMPORT = null;
+    return;
+  }
+  const rows = matched.map(f=>{
+    const val = data[f.key];
+    const count = Array.isArray(val) ? val.length + ' entries' : String(val);
+    return `<div class="export-row"><div><div class="exp-name">${f.label}</div><div class="exp-count">${count}</div></div></div>`;
+  }).join('');
+  wrap.innerHTML =
+    '<div class="page-sub" style="margin-top:0;">Found in this file' + (data.exported_at ? ' (exported ' + fmtDate(String(data.exported_at).slice(0,10)) + ')' : '') + ':</div>' +
+    rows +
+    '<div style="margin-top:12px; padding:12px; background:var(--panel-2); border:1px solid var(--coral); border-radius:8px; color:var(--ink); font-size:0.85rem;">⚠ Importing will <b>replace</b> your current data for each tracker listed above. This cannot be undone.</div>' +
+    '<div style="display:flex; gap:8px; margin-top:10px;">' +
+      '<button class="btn small" onclick="confirmImport()">Yes, import this data</button>' +
+      '<button class="btn small secondary" onclick="cancelImport()">Cancel</button>' +
+    '</div>';
+}
+async function confirmImport(){
+  if(!PENDING_IMPORT) return;
+  const data = PENDING_IMPORT;
+  for(const f of DATA_FIELDS){
+    if(data[f.key] !== undefined){
+      f.set(data[f.key]);
+      await saveKey(f.key, f.get());
+    }
+  }
+  PENDING_IMPORT = null;
+  document.getElementById('importPreview').innerHTML = '';
+  document.getElementById('importFileInput').value = '';
+  document.getElementById('waterTarget').value = waterTargetVal;
+
+  renderSleep(); renderFitness(); renderWater(); renderHabits(); renderMistakes();
+  renderGratitude(); renderGoals(); renderTodos(); renderMeditation(); renderBooks();
+  renderBudget(); renderTradeJournal(); renderTradeMistakes(); renderPortfolio(); renderAllocation();
+  renderExportRows(); renderDashboard();
+  toast('Data imported successfully.');
+}
+function cancelImport(){
+  PENDING_IMPORT = null;
+  document.getElementById('importPreview').innerHTML = '';
+  document.getElementById('importFileInput').value = '';
+  toast('Import cancelled.');
 }
 const EXPORT_DEFS = [
   { key:'sleep', name:'Sleep', cols:['date','bed','wake','hours','quality','notes'] },
