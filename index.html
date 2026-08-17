@@ -97,6 +97,23 @@
   .sb-search-box input:focus-visible{outline:2px solid var(--growth); outline-offset:1px;}
 
   .nav-scroll{flex:1; overflow-y:auto; padding:4px 10px 12px;}
+
+  /* Master accordion sections */
+  .nav-master{margin-bottom:4px; border-radius:9px; overflow:hidden;}
+  .nav-master-head{
+    width:100%; display:flex; align-items:center; gap:9px; padding:10px 10px;
+    background:transparent; border:none; cursor:pointer; text-align:left;
+    color:var(--ink); font-family:'Inter',sans-serif; font-size:0.87rem; font-weight:600;
+    border-radius:9px; transition:background .15s ease;
+  }
+  .nav-master-head:hover{background:var(--panel-2);}
+  .nav-master-head svg:first-child{color:var(--growth); flex:0 0 auto;}
+  .nav-master-head span{flex:1;}
+  .nav-chev{color:var(--ink-dim); transition:transform .25s ease; flex:0 0 auto;}
+  .nav-master-head.expanded .nav-chev{transform:rotate(180deg);}
+  .nav-master-body{padding-top:2px; padding-bottom:6px;}
+  .nav-master-body .nav-group:first-child{margin-top:2px;}
+
   .nav-group{margin-bottom:14px;}
   .nav-label{
     font-size:0.68rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
@@ -212,6 +229,21 @@
   .picon-goals{color:#8b5fbf; background:linear-gradient(135deg, rgba(139,95,191,.15), rgba(139,95,191,.05));}
   .picon-meditation{color:#2fae9e; background:linear-gradient(135deg, rgba(47,174,158,.16), rgba(47,174,158,.05));}
   .picon-tts{color:#3b82c4; background:linear-gradient(135deg, rgba(59,130,196,.15), rgba(59,130,196,.05));}
+  .picon-budget{color:#2f9e6f; background:linear-gradient(135deg, rgba(47,158,111,.16), rgba(47,158,111,.05));}
+  .picon-risk{color:#d9455f; background:linear-gradient(135deg, rgba(217,69,95,.15), rgba(217,69,95,.05));}
+  .picon-tjournal{color:#3b82c4; background:linear-gradient(135deg, rgba(59,130,196,.15), rgba(59,130,196,.05));}
+  .picon-tmistakes{color:#d94f3b; background:linear-gradient(135deg, rgba(217,79,59,.14), rgba(217,79,59,.05));}
+  .picon-portfolio{color:#8b5fbf; background:linear-gradient(135deg, rgba(139,95,191,.15), rgba(139,95,191,.05));}
+  .picon-allocation{color:#d69f1e; background:linear-gradient(135deg, rgba(214,159,30,.18), rgba(214,159,30,.05));}
+  .picon-tlearn{color:#2fae9e; background:linear-gradient(135deg, rgba(47,174,158,.16), rgba(47,174,158,.05));}
+
+  /* Budget statement review */
+  .review-row{
+    display:grid; grid-template-columns:112px 1fr 100px 110px 30px; gap:8px; align-items:center;
+    padding:8px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; background:var(--panel-2);
+  }
+  .review-row input, .review-row select{padding:6px 8px; font-size:0.8rem;}
+  @media (max-width:700px){ .review-row{grid-template-columns:1fr 1fr; grid-auto-rows:auto;} }
   .picon-visuals{color:#c2588f; background:linear-gradient(135deg, rgba(194,88,143,.15), rgba(194,88,143,.05));}
 
   /* Visuals gallery */
@@ -512,83 +544,148 @@
     </div>
 
     <div class="nav-scroll" id="tabNav">
-      <div class="nav-group">
-        <div class="nav-label">Daily tracking</div>
-        <div class="tabs">
-          <button data-tab="dashboard" class="active">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-            Dashboard
-          </button>
-          <button data-tab="sleep">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5A9 9 0 1 1 11.5 3a7 7 0 0 0 9.5 9.5Z"/></svg>
-            Sleep
-          </button>
-          <button data-tab="fitness">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="9" width="3" height="6" rx="1"/><rect x="19" y="9" width="3" height="6" rx="1"/><path d="M7 12h10M5 9v6M19 9v6"/></svg>
-            Fitness
-          </button>
-          <button data-tab="water">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.5 6 10.5a6 6 0 0 1-12 0C6 9.5 12 3 12 3Z"/></svg>
-            Water
-          </button>
-          <button data-tab="habits">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
-            Habits &amp; streaks
-          </button>
-          <button data-tab="todo">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l3 3 5-6"/></svg>
-            To-Do
-          </button>
+      <div class="nav-master">
+        <button class="nav-master-head expanded" data-master="life" onclick="toggleMaster('life')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg>
+          <span>Life Tracker</span>
+          <svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-master-body" id="masterBody-life">
+          <div class="nav-group">
+            <div class="nav-label">Daily tracking</div>
+            <div class="tabs">
+              <button data-tab="dashboard" class="active">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                Dashboard
+              </button>
+              <button data-tab="sleep">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5A9 9 0 1 1 11.5 3a7 7 0 0 0 9.5 9.5Z"/></svg>
+                Sleep
+              </button>
+              <button data-tab="fitness">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="9" width="3" height="6" rx="1"/><rect x="19" y="9" width="3" height="6" rx="1"/><path d="M7 12h10M5 9v6M19 9v6"/></svg>
+                Fitness
+              </button>
+              <button data-tab="water">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.5 6 10.5a6 6 0 0 1-12 0C6 9.5 12 3 12 3Z"/></svg>
+                Water
+              </button>
+              <button data-tab="habits">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+                Habits &amp; streaks
+              </button>
+              <button data-tab="todo">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l3 3 5-6"/></svg>
+                To-Do
+              </button>
+            </div>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-label">Reflect &amp; grow</div>
+            <div class="tabs">
+              <button data-tab="mistakes">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 3v18M9 8h7M9 13h7"/></svg>
+                Mistake Journal
+              </button>
+              <button data-tab="gratitude">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg>
+                Gratitude Journal
+              </button>
+              <button data-tab="goals">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+                Goals
+              </button>
+            </div>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-label">Wellbeing &amp; learning</div>
+            <div class="tabs">
+              <button data-tab="meditation">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="2" y="13" width="5" height="7" rx="2"/><rect x="17" y="13" width="5" height="7" rx="2"/></svg>
+                Meditation
+              </button>
+              <button data-tab="reading">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6c-2-1.5-5-2-9-1v13c4-1 7-.5 9 1 2-1.5 5-2 9-1V5c-4-1-7-.5-9 1Z"/><path d="M12 6v13"/></svg>
+                Reading
+              </button>
+            </div>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-label">Tools</div>
+            <div class="tabs">
+              <button data-tab="tts">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 5V4L8 9H4Z"/><path d="M17 8a5 5 0 0 1 0 8"/><path d="M19.5 5.5a9 9 0 0 1 0 13"/></svg>
+                Text → Audio
+              </button>
+              <button data-tab="export">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+                Export
+              </button>
+              <button data-tab="visuals">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="2.2"/><path d="M3 17l5.5-6 4 4L18 9l3 4"/><rect x="2.5" y="3.5" width="19" height="17" rx="2.5"/></svg>
+                Visuals
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="nav-group">
-        <div class="nav-label">Reflect &amp; grow</div>
-        <div class="tabs">
-          <button data-tab="mistakes">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 3v18M9 8h7M9 13h7"/></svg>
-            Mistake Journal
-          </button>
-          <button data-tab="gratitude">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg>
-            Gratitude Journal
-          </button>
-          <button data-tab="goals">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
-            Goals
-          </button>
+      <div class="nav-master">
+        <button class="nav-master-head" data-master="budget" onclick="toggleMaster('budget')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10h19"/><circle cx="17" cy="14.5" r="1.4"/></svg>
+          <span>Budget Tracker</span>
+          <svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-master-body" id="masterBody-budget" style="display:none;">
+          <div class="nav-group">
+            <div class="tabs">
+              <button data-tab="budget">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10h19"/><circle cx="17" cy="14.5" r="1.4"/></svg>
+                Monthly Budget
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="nav-group">
-        <div class="nav-label">Wellbeing &amp; learning</div>
-        <div class="tabs">
-          <button data-tab="meditation">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="2" y="13" width="5" height="7" rx="2"/><rect x="17" y="13" width="5" height="7" rx="2"/></svg>
-            Meditation
-          </button>
-          <button data-tab="reading">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6c-2-1.5-5-2-9-1v13c4-1 7-.5 9 1 2-1.5 5-2 9-1V5c-4-1-7-.5-9 1Z"/><path d="M12 6v13"/></svg>
-            Reading
-          </button>
-        </div>
-      </div>
-
-      <div class="nav-group">
-        <div class="nav-label">Tools</div>
-        <div class="tabs">
-          <button data-tab="tts">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 5V4L8 9H4Z"/><path d="M17 8a5 5 0 0 1 0 8"/><path d="M19.5 5.5a9 9 0 0 1 0 13"/></svg>
-            Text → Audio
-          </button>
-          <button data-tab="export">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
-            Export
-          </button>
-          <button data-tab="visuals">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="2.2"/><path d="M3 17l5.5-6 4 4L18 9l3 4"/><rect x="2.5" y="3.5" width="19" height="17" rx="2.5"/></svg>
-            Visuals
-          </button>
+      <div class="nav-master">
+        <button class="nav-master-head" data-master="trading" onclick="toggleMaster('trading')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5.5-6 4 4L20 6"/><path d="M14 6h6v6"/></svg>
+          <span>Trading Dashboard</span>
+          <svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-master-body" id="masterBody-trading" style="display:none;">
+          <div class="nav-group">
+            <div class="tabs">
+              <button data-tab="risk-calc">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="16" height="19" rx="2"/><path d="M8 7h8M8 11h2M12.5 11h2M17 11h0M8 15h2M12.5 15h2M17 15h0M8 18h2M12.5 18h2M17 18h0"/></svg>
+                Risk Calculator
+              </button>
+              <button data-tab="trade-journal">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h13a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2-3-2-3 2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h7M8 13h5"/></svg>
+                Trading Journal
+              </button>
+              <button data-tab="trade-mistakes">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 3v18M9 8h7M9 13h7"/></svg>
+                Mistakes &amp; Learning
+              </button>
+              <button data-tab="portfolio">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="19" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Portfolio
+              </button>
+              <button data-tab="allocation">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l7 4"/></svg>
+                Asset Allocation
+              </button>
+              <button data-tab="trade-learn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="M6 10.5V16c0 1 3 2.5 6 2.5s6-1.5 6-2.5v-5.5"/></svg>
+                Daily Learning
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1023,6 +1120,245 @@
         </div>
       </section>
 
+      <!-- ================= BUDGET TRACKER ================= -->
+      <section class="page" id="page-budget">
+        <div class="page-head">
+          <div class="page-icon picon-budget"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10h19"/><circle cx="17" cy="14.5" r="1.4"/></svg></div>
+          <div class="page-head-text">
+            <div class="eyebrow">Budget Tracker</div>
+            <h2>Monthly budget</h2>
+            <div class="page-sub">Track spending against the 50/30/20 rule — Needs, Wants, and Savings — month by month.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="grid-2">
+            <div class="field"><label>Month</label><input type="month" id="budgetMonth" onchange="renderBudget()"></div>
+            <div class="field"><label>Income this month (optional)</label><input type="number" id="budgetIncome" min="0" placeholder="e.g. 80000" onchange="saveBudgetIncome()"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Add a transaction</div>
+          <div class="filter-row" id="budgetAddModeRow">
+            <button class="active" data-mode="manual" onclick="setBudgetAddMode('manual')">Manual entry</button>
+            <button data-mode="paste" onclick="setBudgetAddMode('paste')">Paste a statement</button>
+          </div>
+
+          <div id="budgetManualForm">
+            <div class="grid-3">
+              <div class="field"><label>Date</label><input type="date" id="txDate"></div>
+              <div class="field"><label>Amount (₹)</label><input type="number" id="txAmount" min="0" placeholder="0"></div>
+              <div class="field"><label>Category</label>
+                <select id="txCategory">
+                  <option value="need">Need</option>
+                  <option value="want">Want</option>
+                  <option value="saving">Saving</option>
+                </select>
+              </div>
+            </div>
+            <div class="field"><label>Description</label><input type="text" id="txDesc" placeholder="e.g. Groceries, Zomato, SIP - Axis Bluechip" onkeydown="if(event.key==='Enter')addTransaction()"></div>
+            <button class="btn" onclick="addTransaction()">Add transaction</button>
+          </div>
+
+          <div id="budgetPasteForm" style="display:none;">
+            <div class="page-sub" style="margin-top:0;">Paste lines copied from your bank statement or app — one transaction per line, each with a date, description, and amount. I'll guess the date, amount, and category (Need/Want/Saving) automatically; review and fix anything before saving.</div>
+            <div class="field"><textarea id="statementPaste" style="min-height:130px" placeholder="12/08/2026  Zomato Order  450.00&#10;13/08/2026  Rent Payment  15000&#10;14/08/2026  SIP Axis Bluechip  5000"></textarea></div>
+            <button class="btn secondary" onclick="parseStatement()">Parse lines</button>
+            <div id="statementReview" style="margin-top:14px;"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">This month's breakdown</div>
+          <div id="budgetBreakdown"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Transactions this month</div>
+          <div id="budgetList"></div>
+        </div>
+      </section>
+
+      <!-- ================= RISK CALCULATOR ================= -->
+      <section class="page" id="page-risk-calc">
+        <div class="page-head">
+          <div class="page-icon picon-risk"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="16" height="19" rx="2"/><path d="M8 7h8M8 11h2M12.5 11h2M17 11h0M8 15h2M12.5 15h2M17 15h0M8 18h2M12.5 18h2M17 18h0"/></svg></div>
+          <div class="page-head-text">
+            <div class="eyebrow">Trading Dashboard</div>
+            <h2>Risk calculator</h2>
+            <div class="page-sub">Know your position size and risk before you place the trade, not after.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Trade inputs</div>
+          <div class="grid-2">
+            <div class="field"><label>Account size (₹)</label><input type="number" id="rcAccount" placeholder="e.g. 100000" oninput="calcRisk()"></div>
+            <div class="field"><label>Risk per trade (%)</label><input type="number" id="rcRiskPct" placeholder="e.g. 1" step="0.1" oninput="calcRisk()"></div>
+            <div class="field"><label>Entry price</label><input type="number" id="rcEntry" placeholder="e.g. 250" oninput="calcRisk()"></div>
+            <div class="field"><label>Stop-loss price</label><input type="number" id="rcStop" placeholder="e.g. 245" oninput="calcRisk()"></div>
+            <div class="field"><label>Target price (optional)</label><input type="number" id="rcTarget" placeholder="e.g. 265" oninput="calcRisk()"></div>
+          </div>
+        </div>
+
+        <div class="panel" id="rcResults">
+          <div class="panel-title">Result</div>
+          <div class="empty">Fill in account size, risk %, entry, and stop-loss to calculate.</div>
+        </div>
+      </section>
+
+      <!-- ================= TRADING JOURNAL ================= -->
+      <section class="page" id="page-trade-journal">
+        <div class="page-head">
+          <div class="page-icon picon-tjournal"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h13a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2-3-2-3 2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h7M8 13h5"/></svg></div>
+          <div class="page-head-text">
+            <div class="eyebrow">Trading Dashboard</div>
+            <h2>Trading journal</h2>
+            <div class="page-sub">Every trade logged, win or lose — the pattern only shows up once you have enough data.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Log a trade</div>
+          <div class="grid-3">
+            <div class="field"><label>Date</label><input type="date" id="tjDate"></div>
+            <div class="field"><label>Symbol</label><input type="text" id="tjSymbol" placeholder="e.g. RELIANCE"></div>
+            <div class="field"><label>Direction</label>
+              <select id="tjDirection"><option value="long">Long</option><option value="short">Short</option></select>
+            </div>
+          </div>
+          <div class="grid-3">
+            <div class="field"><label>Entry price</label><input type="number" id="tjEntry"></div>
+            <div class="field"><label>Exit price (leave blank if still open)</label><input type="number" id="tjExit"></div>
+            <div class="field"><label>Quantity</label><input type="number" id="tjQty"></div>
+          </div>
+          <div class="field"><label>Strategy / setup (optional)</label><input type="text" id="tjStrategy" placeholder="e.g. Breakout, Support bounce"></div>
+          <div class="field"><label>Notes (optional)</label><textarea id="tjNotes"></textarea></div>
+          <button class="btn" onclick="addTrade()">Save trade</button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Performance</div>
+          <div class="stat-row" id="tjStats"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Trade history</div>
+          <div id="tjList"></div>
+        </div>
+      </section>
+
+      <!-- ================= TRADING MISTAKES & LEARNING ================= -->
+      <section class="page" id="page-trade-mistakes">
+        <div class="page-head">
+          <div class="page-icon picon-tmistakes"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 3v18M9 8h7M9 13h7"/></svg></div>
+          <div class="page-head-text">
+            <div class="eyebrow">Trading Dashboard</div>
+            <h2>Mistakes &amp; learning</h2>
+            <div class="page-sub">The trading-specific version of your mistake journal — what went wrong, and the rule it taught you.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">New entry</div>
+          <div class="field"><label>Date</label><input type="date" id="tmDate"></div>
+          <div class="field"><label>What happened</label><textarea id="tmWhat" placeholder="Describe the trade and what went wrong."></textarea></div>
+          <div class="field"><label>Lesson learned</label><textarea id="tmLesson" placeholder="What rule will prevent this next time?"></textarea></div>
+          <div class="field"><label>Tag (optional)</label><input type="text" id="tmTag" placeholder="overtrading, FOMO, no stop-loss..."></div>
+          <button class="btn" onclick="addTradeMistake()">Save entry</button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Entries</div>
+          <div id="tmList"></div>
+        </div>
+      </section>
+
+      <!-- ================= PORTFOLIO ================= -->
+      <section class="page" id="page-portfolio">
+        <div class="page-head">
+          <div class="page-icon picon-portfolio"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="19" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div>
+          <div class="page-head-text">
+            <div class="eyebrow">Trading Dashboard</div>
+            <h2>Portfolio</h2>
+            <div class="page-sub">All your holdings, updated manually — quantity, average buy price, and current price.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Add / update a holding</div>
+          <div class="grid-3">
+            <div class="field"><label>Symbol</label><input type="text" id="pfSymbol" placeholder="e.g. RELIANCE, Axis Bluechip Fund"></div>
+            <div class="field"><label>Asset class</label>
+              <select id="pfAssetClass">
+                <option value="equity">Equity</option>
+                <option value="mutual_fund">Mutual Fund</option>
+                <option value="gold">Gold</option>
+                <option value="crypto">Crypto</option>
+                <option value="debt">Debt / FD</option>
+                <option value="cash">Cash</option>
+              </select>
+            </div>
+            <div class="field"><label>Quantity / units</label><input type="number" id="pfQty"></div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label>Average buy price</label><input type="number" id="pfAvgPrice"></div>
+            <div class="field"><label>Current price</label><input type="number" id="pfCurrentPrice"></div>
+          </div>
+          <button class="btn" onclick="addHolding()">Save holding</button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Portfolio summary</div>
+          <div class="stat-row" id="pfStats"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Holdings</div>
+          <div id="pfList"></div>
+        </div>
+      </section>
+
+      <!-- ================= ASSET ALLOCATION ================= -->
+      <section class="page" id="page-allocation">
+        <div class="page-head">
+          <div class="page-icon picon-allocation"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l7 4"/></svg></div>
+          <div class="page-head-text">
+            <div class="eyebrow">Trading Dashboard</div>
+            <h2>Asset allocation</h2>
+            <div class="page-sub">How your money is actually spread across asset classes, calculated from your Portfolio holdings.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Allocation by asset class</div>
+          <div id="allocationBreakdown"></div>
+        </div>
+      </section>
+
+      <!-- ================= TRADING DAILY LEARNING ================= -->
+      <section class="page" id="page-trade-learn">
+        <div class="page-head">
+          <div class="page-icon picon-tlearn"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="M6 10.5V16c0 1 3 2.5 6 2.5s6-1.5 6-2.5v-5.5"/></svg></div>
+          <div class="page-head-text">
+            <div class="eyebrow">Trading Dashboard</div>
+            <h2>Daily learning</h2>
+            <div class="page-sub">One trading or investing concept a day — pick any topic below to read it whenever you like.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Today's lesson</div>
+          <div id="tradeLearnToday"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Browse all topics</div>
+          <div id="tradeLearnList"></div>
+        </div>
+      </section>
+
       <!-- ================= VISUALS ================= -->
       <section class="page" id="page-visuals">
         <div class="page-head">
@@ -1080,7 +1416,9 @@ const DEFAULT_AVATAR = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCA
 /* ============================ STATE ============================ */
 let S = {
   sleep: [], fitness: [], water: [], mistakes: [], todos: [], meditation: [], books: [],
-  habits: [], habitLogs: [], gratitude: [], goals: []
+  habits: [], habitLogs: [], gratitude: [], goals: [],
+  budgetTx: [], budgetIncome: [],
+  tradingJournal: [], tradingMistakes: [], tradingPortfolio: []
 };
 let waterTargetVal = 3000;
 let todoFilter = 'all';
@@ -1259,6 +1597,24 @@ function esc(str){
 }
 
 /* ============================ NAV ============================ */
+function toggleMaster(name){
+  const head = document.querySelector('.nav-master-head[data-master="'+name+'"]');
+  const body = document.getElementById('masterBody-'+name);
+  if(!head || !body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  head.classList.toggle('expanded', !isOpen);
+}
+function expandMasterFor(tabName){
+  const btn = document.querySelector('#tabNav button[data-tab="'+tabName+'"]');
+  if(!btn) return;
+  const body = btn.closest('.nav-master-body');
+  if(!body) return;
+  body.style.display = 'block';
+  const master = body.closest('.nav-master');
+  const head = master ? master.querySelector('.nav-master-head') : null;
+  if(head) head.classList.add('expanded');
+}
 function goToTab(tabName){
   const navBtn = document.querySelector('#tabNav button[data-tab="'+tabName+'"]');
   document.querySelectorAll('nav.sidebar .tabs button').forEach(b=>b.classList.remove('active'));
@@ -1266,6 +1622,7 @@ function goToTab(tabName){
   document.querySelectorAll('section.page').forEach(p=>p.classList.remove('active'));
   const page = document.getElementById('page-'+tabName);
   if(page) page.classList.add('active');
+  expandMasterFor(tabName);
   window.scrollTo({top:0, behavior:'smooth'});
 }
 document.getElementById('tabNav').addEventListener('click', (e)=>{
@@ -1276,14 +1633,29 @@ document.getElementById('tabNav').addEventListener('click', (e)=>{
 
 document.getElementById('navFilter').addEventListener('input', (e)=>{
   const q = e.target.value.trim().toLowerCase();
-  document.querySelectorAll('#tabNav .nav-group').forEach(group=>{
-    let anyVisible = false;
-    group.querySelectorAll('button[data-tab]').forEach(btn=>{
-      const match = !q || btn.textContent.trim().toLowerCase().includes(q);
-      btn.style.display = match ? '' : 'none';
-      if(match) anyVisible = true;
+  document.querySelectorAll('#tabNav .nav-master').forEach(master=>{
+    let masterHasMatch = false;
+    master.querySelectorAll('.nav-group').forEach(group=>{
+      let anyVisible = false;
+      group.querySelectorAll('button[data-tab]').forEach(btn=>{
+        const match = !q || btn.textContent.trim().toLowerCase().includes(q);
+        btn.style.display = match ? '' : 'none';
+        if(match) anyVisible = true;
+      });
+      group.style.display = anyVisible ? '' : 'none';
+      if(anyVisible) masterHasMatch = true;
     });
-    group.style.display = anyVisible ? '' : 'none';
+    const body = master.querySelector('.nav-master-body');
+    const head = master.querySelector('.nav-master-head');
+    if(q && masterHasMatch){
+      body.style.display = 'block';
+      if(head) head.classList.add('expanded');
+    }else if(!q){
+      // restore default: only Life Tracker open
+      const isLife = head && head.dataset.master === 'life';
+      body.style.display = isLife ? 'block' : 'none';
+      if(head) head.classList.toggle('expanded', isLife);
+    }
   });
 });
 
@@ -1843,6 +2215,435 @@ function renderBooks(){
   renderTtsBookSelect();
 }
 
+/* ============================ BUDGET TRACKER ============================ */
+const BUDGET_KEYWORDS = {
+  saving: ['sip','mutual fund','stocks','zerodha','groww','upstox','fd ','fixed deposit','recurring deposit',' rd ','ppf','nps','gold','investment','indmoney','coin by zerodha'],
+  need: ['rent','emi','loan','electricity','water bill','gas ','grocery','groceries','milk','medical','pharmacy','insurance','fuel','petrol','diesel','school','tuition','maintenance','broadband','wifi','recharge','mobile bill','vegetable','doctor','hospital','lpg'],
+  want: ['swiggy','zomato','netflix','prime video','hotstar','spotify','pvr','inox','myntra','flipkart','amazon','dining','restaurant','cafe','coffee','travel','flight','hotel','ott ','gaming','mall','movie','shopping'],
+};
+function budgetKeywordCategory(text){
+  const t = (' ' + (text||'').toLowerCase() + ' ');
+  for(const cat of ['saving','need','want']){
+    if(BUDGET_KEYWORDS[cat].some(k => t.includes(k))) return cat;
+  }
+  return 'want';
+}
+function defaultBudgetMonth(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+function currentBudgetMonth(){
+  const el = document.getElementById('budgetMonth');
+  return (el && el.value) || defaultBudgetMonth();
+}
+function setBudgetAddMode(mode){
+  document.querySelectorAll('#budgetAddModeRow button').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+  document.getElementById('budgetManualForm').style.display = mode==='manual' ? 'block' : 'none';
+  document.getElementById('budgetPasteForm').style.display = mode==='paste' ? 'block' : 'none';
+}
+async function addTransaction(){
+  const date = document.getElementById('txDate').value || todayStr();
+  const amount = Number(document.getElementById('txAmount').value);
+  const category = document.getElementById('txCategory').value;
+  const desc = document.getElementById('txDesc').value.trim();
+  if(!amount || amount<=0){ toast('Enter an amount.'); return; }
+  if(!desc){ toast('Enter a description.'); return; }
+  S.budgetTx.unshift({ id: uid(), date, desc, amount, category });
+  await saveKey('budget-transactions', S.budgetTx);
+  document.getElementById('txAmount').value=''; document.getElementById('txDesc').value='';
+  renderBudget(); toast('Transaction added.');
+}
+async function deleteTransaction(id){
+  S.budgetTx = S.budgetTx.filter(t=>t.id!==id);
+  await saveKey('budget-transactions', S.budgetTx);
+  renderBudget();
+}
+async function saveBudgetIncome(){
+  const month = currentBudgetMonth();
+  const amount = Number(document.getElementById('budgetIncome').value) || 0;
+  S.budgetIncome = S.budgetIncome.filter(x=>x.month!==month);
+  if(amount>0) S.budgetIncome.push({ month, amount });
+  await saveKey('budget-income', S.budgetIncome);
+  renderBudget();
+}
+function parseStatementLine(line){
+  line = line.trim();
+  if(!line) return null;
+  const m1 = line.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})\b/);
+  const m2 = !m1 ? line.match(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/) : null;
+  let date = null;
+  if(m1){
+    let [, d, mo, y] = m1;
+    if(y.length===2) y = '20'+y;
+    date = y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  }else if(m2){
+    let [, y, mo, d] = m2;
+    date = y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  }
+  const amounts = line.match(/\d[\d,]*\.\d{1,2}|\d[\d,]{2,}/g) || [];
+  let amount = 0, amtToken = '';
+  if(amounts.length){
+    amtToken = amounts[amounts.length-1];
+    amount = parseFloat(amtToken.replace(/,/g,''));
+  }
+  let desc = line;
+  if(m1) desc = desc.replace(m1[0], ' ');
+  if(m2) desc = desc.replace(m2[0], ' ');
+  if(amtToken) desc = desc.replace(amtToken, ' ');
+  desc = desc.replace(/\b(dr|cr|debit|credit)\b/gi, ' ').replace(/[|,\-]+/g,' ').replace(/\s+/g,' ').trim();
+  if(!desc) desc = 'Transaction';
+  return { date: date || todayStr(), desc, amount, category: budgetKeywordCategory(desc) };
+}
+let PARSED_ROWS = [];
+function parseStatement(){
+  const raw = document.getElementById('statementPaste').value;
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  PARSED_ROWS = lines.map(parseStatementLine).filter(Boolean);
+  renderStatementReview();
+  if(!PARSED_ROWS.length) toast('No lines detected — check the format and try again.');
+}
+function renderStatementReview(){
+  const wrap = document.getElementById('statementReview');
+  if(!PARSED_ROWS.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = '<div class="page-sub" style="margin-top:0;">Review before saving — ' + PARSED_ROWS.length + ' line(s) detected:</div>' +
+    PARSED_ROWS.map((r,i)=>`
+      <div class="review-row">
+        <input type="date" value="${r.date}" onchange="PARSED_ROWS[${i}].date=this.value">
+        <input type="text" value="${esc(r.desc)}" onchange="PARSED_ROWS[${i}].desc=this.value">
+        <input type="number" value="${r.amount}" onchange="PARSED_ROWS[${i}].amount=Number(this.value)">
+        <select onchange="PARSED_ROWS[${i}].category=this.value">
+          <option value="need" ${r.category==='need'?'selected':''}>Need</option>
+          <option value="want" ${r.category==='want'?'selected':''}>Want</option>
+          <option value="saving" ${r.category==='saving'?'selected':''}>Saving</option>
+        </select>
+        <button class="icon-btn" onclick="removeParsedRow(${i})" aria-label="Remove row">✕</button>
+      </div>`).join('') +
+    '<button class="btn small" style="margin-top:8px;" onclick="saveAllParsedRows()">Save all ' + PARSED_ROWS.length + ' transactions</button>';
+}
+function removeParsedRow(i){
+  PARSED_ROWS.splice(i,1);
+  renderStatementReview();
+}
+async function saveAllParsedRows(){
+  if(!PARSED_ROWS.length) return;
+  PARSED_ROWS.forEach(r=>{
+    S.budgetTx.unshift({ id: uid(), date: r.date, desc: r.desc || 'Transaction', amount: Number(r.amount)||0, category: r.category });
+  });
+  await saveKey('budget-transactions', S.budgetTx);
+  PARSED_ROWS = [];
+  const pasteEl = document.getElementById('statementPaste');
+  if(pasteEl) pasteEl.value = '';
+  renderStatementReview();
+  renderBudget();
+  toast('Transactions saved.');
+}
+function renderBudget(){
+  const monthEl = document.getElementById('budgetMonth');
+  if(monthEl && !monthEl.value) monthEl.value = defaultBudgetMonth();
+  const month = currentBudgetMonth();
+
+  const incomeEntry = S.budgetIncome.find(x=>x.month===month);
+  const incomeEl = document.getElementById('budgetIncome');
+  if(incomeEl) incomeEl.value = incomeEntry ? incomeEntry.amount : '';
+
+  const monthTx = S.budgetTx.filter(t=>t.date && t.date.slice(0,7)===month);
+  const totals = { need:0, want:0, saving:0 };
+  monthTx.forEach(t=>{ totals[t.category] = (totals[t.category]||0) + Number(t.amount||0); });
+  const totalSpend = totals.need + totals.want + totals.saving;
+  const income = incomeEntry ? incomeEntry.amount : 0;
+  const base = income > 0 ? income : totalSpend;
+
+  const catMeta = [
+    { key:'need', label:'Needs', target:50, color:'var(--growth)' },
+    { key:'want', label:'Wants', target:30, color:'var(--copper)' },
+    { key:'saving', label:'Savings', target:20, color:'#3b82c4' },
+  ];
+  const breakdownEl = document.getElementById('budgetBreakdown');
+  if(!monthTx.length){
+    breakdownEl.innerHTML = '<div class="empty">No transactions logged for this month yet.</div>';
+  }else{
+    breakdownEl.innerHTML = catMeta.map(c=>{
+      const amt = totals[c.key] || 0;
+      const pct = base>0 ? Math.round((amt/base)*100) : 0;
+      const overTarget = pct > c.target;
+      return `<div class="meter">
+        <div class="meter-label"><span>${c.label} <span class="tag">target ${c.target}%</span></span><b style="${overTarget?'color:var(--coral);':''}">₹${amt.toLocaleString('en-IN')} · ${pct}%</b></div>
+        <div class="trace"><div class="trace-fill" style="width:${Math.min(100,pct)}%; background:${overTarget?'var(--coral)':c.color};"></div></div>
+      </div>`;
+    }).join('') + (income>0 ? '' : '<div class="page-sub" style="margin-top:8px;">Add this month\u2019s income above to see percentages against take-home pay — right now percentages are shown against total spend.</div>');
+  }
+
+  const listEl = document.getElementById('budgetList');
+  if(!monthTx.length){
+    listEl.innerHTML = '<div class="empty">Nothing here yet.</div>';
+  }else{
+    const catTag = { need:'Need', want:'Want', saving:'Saving' };
+    listEl.innerHTML = monthTx.map(t=>`
+      <div class="item">
+        <div class="item-top">
+          <div>
+            <div class="item-date">${fmtDate(t.date)}</div>
+            <div class="item-title">${esc(t.desc)} <span class="tag">${catTag[t.category]||t.category}</span></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <b class="mono">₹${Number(t.amount).toLocaleString('en-IN')}</b>
+            <button class="icon-btn" onclick="deleteTransaction('${t.id}')" aria-label="Delete transaction">✕</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+/* ============================ RISK CALCULATOR ============================ */
+function calcRisk(){
+  const account = Number(document.getElementById('rcAccount').value);
+  const riskPct = Number(document.getElementById('rcRiskPct').value);
+  const entry = Number(document.getElementById('rcEntry').value);
+  const stop = Number(document.getElementById('rcStop').value);
+  const target = Number(document.getElementById('rcTarget').value);
+  const resultsEl = document.getElementById('rcResults');
+  if(!account || !riskPct || !entry || !stop || entry===stop){
+    resultsEl.innerHTML = '<div class="panel-title">Result</div><div class="empty">Fill in account size, risk %, entry, and stop-loss to calculate.</div>';
+    return;
+  }
+  const riskAmount = account * riskPct / 100;
+  const riskPerShare = Math.abs(entry - stop);
+  const positionSize = Math.floor(riskAmount / riskPerShare);
+  const positionValue = positionSize * entry;
+  const actualRisk = positionSize * riskPerShare;
+  let rrHtml = '';
+  if(target && target>0 && target!==entry){
+    const rewardPerShare = Math.abs(target - entry);
+    const rr = (rewardPerShare / riskPerShare).toFixed(2);
+    rrHtml = `<div class="stat-card"><div class="num">1 : ${rr}</div><div class="lbl">Risk : Reward</div></div>`;
+  }
+  resultsEl.innerHTML = `
+    <div class="panel-title">Result</div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="num">${positionSize}<small> shares</small></div><div class="lbl">Position size</div></div>
+      <div class="stat-card"><div class="num">₹${Math.round(actualRisk).toLocaleString('en-IN')}</div><div class="lbl">Amount at risk</div></div>
+      <div class="stat-card"><div class="num">₹${Math.round(positionValue).toLocaleString('en-IN')}</div><div class="lbl">Position value</div></div>
+      ${rrHtml}
+    </div>
+  `;
+}
+
+/* ============================ TRADING JOURNAL ============================ */
+async function addTrade(){
+  const date = document.getElementById('tjDate').value || todayStr();
+  const symbol = document.getElementById('tjSymbol').value.trim().toUpperCase();
+  const direction = document.getElementById('tjDirection').value;
+  const entry = Number(document.getElementById('tjEntry').value);
+  const exitVal = document.getElementById('tjExit').value;
+  const exit = exitVal ? Number(exitVal) : null;
+  const qty = Number(document.getElementById('tjQty').value);
+  const strategy = document.getElementById('tjStrategy').value.trim();
+  const notes = document.getElementById('tjNotes').value.trim();
+  if(!symbol){ toast('Enter a symbol.'); return; }
+  if(!entry || !qty){ toast('Enter entry price and quantity.'); return; }
+  const pnl = (exit !== null) ? (direction==='long' ? (exit-entry) : (entry-exit)) * qty : null;
+  S.tradingJournal.unshift({ id: uid(), date, symbol, direction, entry, exit, qty, strategy, notes, pnl });
+  await saveKey('trading-journal', S.tradingJournal);
+  ['tjSymbol','tjEntry','tjExit','tjQty','tjStrategy','tjNotes'].forEach(id=>{ document.getElementById(id).value=''; });
+  renderTradeJournal(); toast('Trade saved.');
+}
+async function deleteTrade(id){
+  S.tradingJournal = S.tradingJournal.filter(t=>t.id!==id);
+  await saveKey('trading-journal', S.tradingJournal);
+  renderTradeJournal();
+}
+function renderTradeJournal(){
+  const closedTrades = S.tradingJournal.filter(t=>t.pnl!==null && t.pnl!==undefined);
+  const wins = closedTrades.filter(t=>t.pnl>0);
+  const totalPnl = closedTrades.reduce((a,t)=>a+t.pnl,0);
+  const winRate = closedTrades.length ? Math.round((wins.length/closedTrades.length)*100) : 0;
+  const avgWin = wins.length ? (wins.reduce((a,t)=>a+t.pnl,0)/wins.length) : 0;
+  const statsEl = document.getElementById('tjStats');
+  if(statsEl){
+    statsEl.innerHTML = `
+      <div class="stat-card"><div class="num">${S.tradingJournal.length}</div><div class="lbl">Total trades</div></div>
+      <div class="stat-card"><div class="num" style="${totalPnl>=0?'color:var(--growth);':'color:var(--coral);'}">₹${Math.round(totalPnl).toLocaleString('en-IN')}</div><div class="lbl">Total P&amp;L</div></div>
+      <div class="stat-card"><div class="num">${winRate}%</div><div class="lbl">Win rate</div></div>
+      <div class="stat-card"><div class="num">₹${Math.round(avgWin).toLocaleString('en-IN')}</div><div class="lbl">Avg win</div></div>
+    `;
+  }
+  const listEl = document.getElementById('tjList');
+  if(!listEl) return;
+  if(!S.tradingJournal.length){ listEl.innerHTML = '<div class="empty">No trades logged yet.</div>'; return; }
+  listEl.innerHTML = S.tradingJournal.map(t=>{
+    const pnlText = (t.pnl===null||t.pnl===undefined) ? 'Open' : ('₹'+Math.round(t.pnl).toLocaleString('en-IN'));
+    const pnlColor = (t.pnl===null||t.pnl===undefined) ? 'var(--ink-dim)' : (t.pnl>=0 ? 'var(--growth)' : 'var(--coral)');
+    return `<div class="item">
+      <div class="item-top">
+        <div>
+          <div class="item-date">${fmtDate(t.date)}</div>
+          <div class="item-title">${esc(t.symbol)} <span class="tag">${t.direction}</span>${t.strategy?` <span class="tag">${esc(t.strategy)}</span>`:''}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <b class="mono" style="color:${pnlColor};">${pnlText}</b>
+          <button class="icon-btn" onclick="deleteTrade('${t.id}')" aria-label="Delete trade">✕</button>
+        </div>
+      </div>
+      <div class="item-body">Entry ₹${t.entry}${t.exit!==null&&t.exit!==undefined?` → Exit ₹${t.exit}`:''} · Qty ${t.qty}${t.notes?` · ${esc(t.notes)}`:''}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================ TRADING MISTAKES ============================ */
+async function addTradeMistake(){
+  const date = document.getElementById('tmDate').value || todayStr();
+  const what = document.getElementById('tmWhat').value.trim();
+  const lesson = document.getElementById('tmLesson').value.trim();
+  const tag = document.getElementById('tmTag').value.trim();
+  if(!what){ toast('Describe what happened.'); return; }
+  S.tradingMistakes.unshift({ id: uid(), date, what, lesson, tag });
+  await saveKey('trading-mistakes', S.tradingMistakes);
+  document.getElementById('tmWhat').value=''; document.getElementById('tmLesson').value=''; document.getElementById('tmTag').value='';
+  renderTradeMistakes(); toast('Entry saved.');
+}
+async function deleteTradeMistake(id){
+  S.tradingMistakes = S.tradingMistakes.filter(x=>x.id!==id);
+  await saveKey('trading-mistakes', S.tradingMistakes);
+  renderTradeMistakes();
+}
+function renderTradeMistakes(){
+  const listEl = document.getElementById('tmList');
+  if(!listEl) return;
+  if(!S.tradingMistakes.length){ listEl.innerHTML = '<div class="empty">No entries yet.</div>'; return; }
+  listEl.innerHTML = S.tradingMistakes.map(e=>`
+    <div class="item">
+      <div class="item-top">
+        <div>
+          <div class="item-date">${fmtDate(e.date)}</div>
+          <div class="item-title">${esc(e.what)}</div>
+        </div>
+        <button class="icon-btn" onclick="deleteTradeMistake('${e.id}')" aria-label="Delete entry">✕</button>
+      </div>
+      ${e.lesson ? `<div class="item-body"><b style="color:var(--growth)">Lesson:</b> ${esc(e.lesson)}</div>` : ''}
+      ${e.tag ? `<div style="margin-top:6px;"><span class="tag">${esc(e.tag)}</span></div>` : ''}
+    </div>`).join('');
+}
+
+/* ============================ PORTFOLIO & ALLOCATION ============================ */
+const ASSET_CLASS_LABELS = { equity:'Equity', mutual_fund:'Mutual Fund', gold:'Gold', crypto:'Crypto', debt:'Debt / FD', cash:'Cash' };
+const ASSET_CLASS_COLORS = { equity:'#1f9d6c', mutual_fund:'#3b82c4', gold:'#d69f1e', crypto:'#8b5fbf', debt:'#c98150', cash:'#5c6b73' };
+async function addHolding(){
+  const symbol = document.getElementById('pfSymbol').value.trim();
+  const assetClass = document.getElementById('pfAssetClass').value;
+  const qty = Number(document.getElementById('pfQty').value);
+  const avgPrice = Number(document.getElementById('pfAvgPrice').value);
+  const currentPriceVal = document.getElementById('pfCurrentPrice').value;
+  const currentPrice = currentPriceVal ? Number(currentPriceVal) : avgPrice;
+  if(!symbol || !qty || !avgPrice){ toast('Enter symbol, quantity, and average buy price.'); return; }
+  S.tradingPortfolio.unshift({ id: uid(), symbol, assetClass, qty, avgPrice, currentPrice });
+  await saveKey('trading-portfolio', S.tradingPortfolio);
+  ['pfSymbol','pfQty','pfAvgPrice','pfCurrentPrice'].forEach(id=>{ document.getElementById(id).value=''; });
+  renderPortfolio(); renderAllocation(); toast('Holding saved.');
+}
+async function deleteHolding(id){
+  S.tradingPortfolio = S.tradingPortfolio.filter(h=>h.id!==id);
+  await saveKey('trading-portfolio', S.tradingPortfolio);
+  renderPortfolio(); renderAllocation();
+}
+function renderPortfolio(){
+  const invested = S.tradingPortfolio.reduce((a,h)=>a+h.qty*h.avgPrice,0);
+  const current = S.tradingPortfolio.reduce((a,h)=>a+h.qty*h.currentPrice,0);
+  const pnl = current - invested;
+  const pnlPct = invested>0 ? ((pnl/invested)*100).toFixed(1) : '0.0';
+  const statsEl = document.getElementById('pfStats');
+  if(statsEl){
+    statsEl.innerHTML = `
+      <div class="stat-card"><div class="num">₹${Math.round(invested).toLocaleString('en-IN')}</div><div class="lbl">Invested</div></div>
+      <div class="stat-card"><div class="num">₹${Math.round(current).toLocaleString('en-IN')}</div><div class="lbl">Current value</div></div>
+      <div class="stat-card"><div class="num" style="${pnl>=0?'color:var(--growth);':'color:var(--coral);'}">₹${Math.round(pnl).toLocaleString('en-IN')}</div><div class="lbl">P&amp;L</div></div>
+      <div class="stat-card"><div class="num" style="${pnl>=0?'color:var(--growth);':'color:var(--coral);'}">${pnlPct}%</div><div class="lbl">Return</div></div>
+    `;
+  }
+  const listEl = document.getElementById('pfList');
+  if(!listEl) return;
+  if(!S.tradingPortfolio.length){ listEl.innerHTML = '<div class="empty">No holdings added yet.</div>'; return; }
+  listEl.innerHTML = S.tradingPortfolio.map(h=>{
+    const hInvested = h.qty*h.avgPrice, hCurrent = h.qty*h.currentPrice, hPnl = hCurrent-hInvested;
+    return `<div class="item">
+      <div class="item-top">
+        <div>
+          <div class="item-title">${esc(h.symbol)} <span class="tag">${ASSET_CLASS_LABELS[h.assetClass]||h.assetClass}</span></div>
+          <div class="item-body">Qty ${h.qty} · Avg ₹${h.avgPrice} · LTP ₹${h.currentPrice}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <b class="mono" style="color:${hPnl>=0?'var(--growth)':'var(--coral)'};">₹${Math.round(hPnl).toLocaleString('en-IN')}</b>
+          <button class="icon-btn" onclick="deleteHolding('${h.id}')" aria-label="Delete holding">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderAllocation(){
+  const wrap = document.getElementById('allocationBreakdown');
+  if(!wrap) return;
+  if(!S.tradingPortfolio.length){ wrap.innerHTML = '<div class="empty">Add holdings in the Portfolio module to see your allocation.</div>'; return; }
+  const totals = {};
+  let grandTotal = 0;
+  S.tradingPortfolio.forEach(h=>{
+    const val = h.qty*h.currentPrice;
+    totals[h.assetClass] = (totals[h.assetClass]||0) + val;
+    grandTotal += val;
+  });
+  const rows = Object.keys(totals).sort((a,b)=>totals[b]-totals[a]);
+  wrap.innerHTML = rows.map(cls=>{
+    const val = totals[cls];
+    const pct = grandTotal>0 ? Math.round((val/grandTotal)*100) : 0;
+    return `<div class="meter">
+      <div class="meter-label"><span>${ASSET_CLASS_LABELS[cls]||cls}</span><b>₹${Math.round(val).toLocaleString('en-IN')} · ${pct}%</b></div>
+      <div class="trace"><div class="trace-fill" style="width:${pct}%; background:${ASSET_CLASS_COLORS[cls]||'var(--growth)'};"></div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================ TRADING DAILY LEARNING ============================ */
+const TRADING_LESSONS = [
+  { title:'Position Sizing', body:'How much you buy matters more than what you buy. Risking a fixed, small percentage of your capital per trade (commonly 1-2%) means no single loss can meaningfully damage your account, no matter how confident you felt going in.' },
+  { title:'Risk-Reward Ratio', body:'A strategy that wins only 40% of the time can still be profitable if your average win is twice your average loss. Before entering any trade, know your risk-reward ratio — not just whether you think the trade will work.' },
+  { title:'Stop-Loss Discipline', body:'A stop-loss is a decision made in advance, before emotion enters the picture. Moving it further away after the price goes against you turns a planned small loss into an unplanned large one.' },
+  { title:'Cutting Losses Early', body:'The market does not know or care what you paid for something. Holding a losing position hoping it "comes back" is not a strategy — it is a bet that your original analysis will eventually be right, which is a different thing entirely.' },
+  { title:'Letting Winners Run', body:'Many traders cut winners short out of fear of giving back profit, while letting losers run out of hope. Flipping that instinct — cutting losers fast, letting winners run — is one of the most repeated pieces of advice in trading for a reason.' },
+  { title:'Diversification', body:'Concentrating your entire portfolio in one stock, one sector, or one asset class means one piece of bad news can undo months of gains. Spreading risk across uncorrelated positions smooths out the ride without necessarily reducing long-term returns.' },
+  { title:'Avoiding Overleverage', body:'Leverage magnifies both gains and losses equally, but psychologically it only feels like it magnifies gains — until a loss wipes out capital far faster than expected. Most blown accounts are a leverage problem, not a strategy problem.' },
+  { title:'Trading Psychology & FOMO', body:'Fear of missing out pushes traders into positions after most of the move has already happened, right as the risk-reward turns unfavorable. If you feel rushed to enter a trade, that urgency itself is useful information.' },
+  { title:'The Importance of a Trading Plan', body:'A trading plan written in advance — entry rules, exit rules, position size, what invalidates the setup — removes the need to make high-stakes decisions in the heat of the moment, when judgment is at its worst.' },
+  { title:'Journaling Every Trade', body:'Without a journal, every loss feels like bad luck and every win feels like skill. A journal turns a string of trades into a dataset you can actually learn from — patterns in your mistakes only become visible in aggregate.' },
+  { title:'Avoiding Overtrading', body:'Not every day offers a good setup, and forcing a trade out of boredom is one of the fastest ways to give back profits. Sitting on your hands is a valid, active trading decision.' },
+  { title:'Understanding Volatility', body:'The same position size that is comfortable in a calm market can be dangerously large in a volatile one. Adjusting size to current volatility, not just account size, keeps risk consistent across different market conditions.' },
+  { title:'Technical vs Fundamental Analysis', body:'Fundamentals can tell you what a business might be worth over years; technicals can tell you what the crowd is doing right now. Neither is "correct" — the two answer different questions on different timeframes.' },
+  { title:'Patience & Waiting for Setups', body:'The best traders are often just very good at doing nothing until their specific conditions are met. Waiting is not the same as missing out — it is the discipline that makes the setups you do take more reliable.' },
+  { title:'The Power of Compounding', body:'Consistent, modest, repeatable returns compound into far more than occasional large wins wiped out by occasional large losses. Protecting capital during bad periods is what allows compounding to work at all.' },
+  { title:'Common Beginner Mistakes', body:'Trading without a stop-loss, sizing positions based on conviction instead of risk, and revenge-trading after a loss are three of the most common ways new traders damage their accounts — often before they even realize a pattern is forming.' },
+];
+function renderTradeLearn(){
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+  const today = TRADING_LESSONS[dayOfYear % TRADING_LESSONS.length];
+  const todayEl = document.getElementById('tradeLearnToday');
+  if(todayEl){
+    todayEl.innerHTML = `<div class="item-title" style="font-size:1.05rem;">${esc(today.title)}</div><div class="item-body" style="margin-top:6px;">${esc(today.body)}</div>`;
+  }
+  const listEl = document.getElementById('tradeLearnList');
+  if(listEl){
+    listEl.innerHTML = TRADING_LESSONS.map((l,i)=>`
+      <div class="book-card">
+        <div class="book-head" onclick="toggleTradeLesson(${i})">
+          <div class="item-title">${esc(l.title)}</div>
+        </div>
+        <div class="book-details" id="tlDetails-${i}">
+          <div class="item-body" style="margin-top:8px;">${esc(l.body)}</div>
+        </div>
+      </div>`).join('');
+  }
+}
+function toggleTradeLesson(i){
+  const el = document.getElementById('tlDetails-'+i);
+  if(el) el.classList.toggle('open');
+}
+
 /* ============================ TEXT TO SPEECH ============================ */
 function renderTtsBookSelect(){
   const sel = document.getElementById('ttsBookSelect');
@@ -2166,6 +2967,10 @@ const EXPORT_DEFS = [
   { key:'todos', name:'To-do list', cols:['date','text','done'] },
   { key:'meditation', name:'Meditation library', cols:['title','vid'] },
   { key:'books', name:'Reading / books', cols:['title','author','details'] },
+  { key:'budgetTx', name:'Budget transactions', cols:['date','desc','amount','category'] },
+  { key:'tradingJournal', name:'Trading journal', cols:['date','symbol','direction','entry','exit','qty','pnl','strategy'] },
+  { key:'tradingMistakes', name:'Trading mistakes', cols:['date','what','lesson','tag'] },
+  { key:'tradingPortfolio', name:'Portfolio holdings', cols:['symbol','assetClass','qty','avgPrice','currentPrice'] },
 ];
 function renderExportRows(){
   const wrap = document.getElementById('exportRows');
@@ -2195,10 +3000,15 @@ async function init(){
   document.getElementById('waterDate').value = todayStr();
   document.getElementById('mistDate').value = todayStr();
   document.getElementById('gratDate').value = todayStr();
+  document.getElementById('txDate').value = todayStr();
+  document.getElementById('tjDate').value = todayStr();
+  document.getElementById('tmDate').value = todayStr();
+  document.getElementById('budgetMonth').value = defaultBudgetMonth();
 
   let photo, ttsLang, theme;
   [S.sleep, S.fitness, S.water, S.mistakes, S.todos, S.meditation, S.books,
-   S.habits, S.habitLogs, S.gratitude, S.goals, waterTargetVal, photo, ttsLang, theme] = await Promise.all([
+   S.habits, S.habitLogs, S.gratitude, S.goals, waterTargetVal, photo, ttsLang, theme,
+   S.budgetTx, S.budgetIncome, S.tradingJournal, S.tradingMistakes, S.tradingPortfolio] = await Promise.all([
     loadKey('sleep-entries', []),
     loadKey('fitness-entries', []),
     loadKey('water-entries', []),
@@ -2214,6 +3024,11 @@ async function init(){
     loadKey('brand-logo', null),
     loadKey('tts-lang', 'auto'),
     loadKey('theme', null),
+    loadKey('budget-transactions', []),
+    loadKey('budget-income', []),
+    loadKey('trading-journal', []),
+    loadKey('trading-mistakes', []),
+    loadKey('trading-portfolio', []),
   ]);
   document.getElementById('waterTarget').value = waterTargetVal;
   document.getElementById('ttsLang').value = ttsLang || 'auto';
@@ -2225,6 +3040,8 @@ async function init(){
   renderSleep(); renderFitness(); renderWater(); renderHabits(); renderMistakes();
   renderGratitude(); renderGoals(); renderTodos(); renderMeditation(); renderBooks(); renderExportRows();
   renderVisuals(); renderMotivation(); populateVoices();
+  renderBudget();
+  renderTradeJournal(); renderTradeMistakes(); renderPortfolio(); renderAllocation(); renderTradeLearn();
   renderDashboard();
 }
 bootApp();
