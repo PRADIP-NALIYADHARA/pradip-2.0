@@ -416,6 +416,20 @@
   .filter-row button{background:var(--panel); border:1px solid var(--line); color:var(--ink-dim); padding:6px 12px; border-radius:20px; font-size:0.78rem; cursor:pointer; font-family:'JetBrains Mono',monospace;}
   .filter-row button.active{border-color:var(--growth); color:var(--growth); background:var(--growth-tint);}
 
+  /* Budget category quick buttons */
+  .cat-toggle-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .cat-btn{
+    flex:1; min-width:90px; padding:11px 10px; border-radius:9px; border:1.5px solid var(--line);
+    background:var(--panel-2); color:var(--ink-dim); font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:600;
+    cursor:pointer; transition:all .15s ease; text-align:center;
+  }
+  .cat-btn:hover{border-color:var(--growth); color:var(--ink);}
+  .cat-btn.active{border-color:var(--growth); background:var(--growth); color:#fff; transform:translateY(-1px); box-shadow:0 4px 10px rgba(31,157,108,0.3);}
+  .cat-btn.active[data-cat="want"]{background:var(--copper); border-color:var(--copper); box-shadow:0 4px 10px rgba(201,129,80,0.3);}
+  .cat-btn.active[data-cat="saving"]{background:#3b82c4; border-color:#3b82c4; box-shadow:0 4px 10px rgba(59,130,196,0.3);}
+  .remaining-good{color:var(--growth); font-weight:700;}
+  .remaining-over{color:var(--coral); font-weight:700;}
+
   /* Habits */
   .habit-row{display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:8px; background:var(--panel-2); animation:itemIn .3s ease;}
   .habit-row input[type=checkbox]{width:18px; height:18px; flex:0 0 auto;}
@@ -1153,19 +1167,23 @@
           </div>
 
           <div id="budgetManualForm">
-            <div class="grid-3">
+            <div class="grid-2">
               <div class="field"><label>Date</label><input type="date" id="txDate"></div>
               <div class="field"><label>Amount (₹)</label><input type="number" id="txAmount" min="0" placeholder="0"></div>
-              <div class="field"><label>Category</label>
-                <select id="txCategory">
-                  <option value="need">Need</option>
-                  <option value="want">Want</option>
-                  <option value="saving">Saving</option>
-                </select>
+            </div>
+            <div class="field">
+              <label>Category</label>
+              <div class="cat-toggle-row" id="txCategoryRow">
+                <button type="button" class="cat-btn active" data-cat="need" onclick="selectTxCategory('need')">🏠 Need</button>
+                <button type="button" class="cat-btn" data-cat="want" onclick="selectTxCategory('want')">🛍️ Want</button>
+                <button type="button" class="cat-btn" data-cat="saving" onclick="selectTxCategory('saving')">💰 Saving</button>
               </div>
             </div>
             <div class="field"><label>Description</label><input type="text" id="txDesc" placeholder="e.g. Groceries, Zomato, SIP - Axis Bluechip" onkeydown="if(event.key==='Enter')addTransaction()"></div>
-            <button class="btn" onclick="addTransaction()">Add transaction</button>
+            <div style="display:flex; gap:8px;">
+              <button class="btn" id="txSubmitBtn" onclick="addTransaction()">Add transaction</button>
+              <button class="btn secondary" id="txCancelEditBtn" onclick="cancelEditTransaction()" style="display:none;">Cancel edit</button>
+            </div>
           </div>
 
           <div id="budgetPasteForm" style="display:none;">
@@ -1184,6 +1202,11 @@
         <div class="panel">
           <div class="panel-title">Transactions this month</div>
           <div id="budgetList"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Monthly report</div>
+          <div id="budgetReport"></div>
         </div>
       </section>
 
@@ -2248,21 +2271,60 @@ function setBudgetAddMode(mode){
   document.getElementById('budgetManualForm').style.display = mode==='manual' ? 'block' : 'none';
   document.getElementById('budgetPasteForm').style.display = mode==='paste' ? 'block' : 'none';
 }
+let SELECTED_TX_CATEGORY = 'need';
+let EDITING_TX_ID = null;
+function selectTxCategory(cat){
+  SELECTED_TX_CATEGORY = cat;
+  document.querySelectorAll('#txCategoryRow .cat-btn').forEach(b=>b.classList.toggle('active', b.dataset.cat===cat));
+}
 async function addTransaction(){
   const date = document.getElementById('txDate').value || todayStr();
   const amount = Number(document.getElementById('txAmount').value);
-  const category = document.getElementById('txCategory').value;
+  const category = SELECTED_TX_CATEGORY;
   const desc = document.getElementById('txDesc').value.trim();
   if(!amount || amount<=0){ toast('Enter an amount.'); return; }
   if(!desc){ toast('Enter a description.'); return; }
+  if(EDITING_TX_ID){
+    const tx = S.budgetTx.find(t=>t.id===EDITING_TX_ID);
+    if(tx){ tx.date=date; tx.amount=amount; tx.category=category; tx.desc=desc; }
+    await saveKey('budget-transactions', S.budgetTx);
+    cancelEditTransaction();
+    renderBudget(); toast('Transaction updated.');
+    return;
+  }
   S.budgetTx.unshift({ id: uid(), date, desc, amount, category });
   await saveKey('budget-transactions', S.budgetTx);
   document.getElementById('txAmount').value=''; document.getElementById('txDesc').value='';
   renderBudget(); toast('Transaction added.');
 }
+function editTransaction(id){
+  const tx = S.budgetTx.find(t=>t.id===id);
+  if(!tx) return;
+  EDITING_TX_ID = id;
+  document.getElementById('txDate').value = tx.date;
+  document.getElementById('txAmount').value = tx.amount;
+  document.getElementById('txDesc').value = tx.desc;
+  selectTxCategory(tx.category);
+  setBudgetAddMode('manual');
+  document.getElementById('txSubmitBtn').textContent = 'Update transaction';
+  document.getElementById('txCancelEditBtn').style.display = 'inline-block';
+  const descEl = document.getElementById('txDesc');
+  if(descEl && typeof descEl.scrollIntoView === 'function'){
+    try{ descEl.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(e){}
+  }
+}
+function cancelEditTransaction(){
+  EDITING_TX_ID = null;
+  document.getElementById('txAmount').value=''; document.getElementById('txDesc').value='';
+  selectTxCategory('need');
+  document.getElementById('txDate').value = todayStr();
+  document.getElementById('txSubmitBtn').textContent = 'Add transaction';
+  document.getElementById('txCancelEditBtn').style.display = 'none';
+}
 async function deleteTransaction(id){
   S.budgetTx = S.budgetTx.filter(t=>t.id!==id);
   await saveKey('budget-transactions', S.budgetTx);
+  if(EDITING_TX_ID===id) cancelEditTransaction();
   renderBudget();
 }
 async function saveBudgetIncome(){
@@ -2365,11 +2427,22 @@ function renderBudget(){
     { key:'want', label:'Wants', target:30, color:'var(--copper)' },
     { key:'saving', label:'Savings', target:20, color:'#3b82c4' },
   ];
+
   const breakdownEl = document.getElementById('budgetBreakdown');
-  if(!monthTx.length){
+  if(!monthTx.length && income<=0){
     breakdownEl.innerHTML = '<div class="empty">No transactions logged for this month yet.</div>';
   }else{
-    breakdownEl.innerHTML = catMeta.map(c=>{
+    let remainingHtml = '';
+    if(income>0){
+      remainingHtml = '<div class="stat-row" style="margin-bottom:16px;">' + catMeta.map(c=>{
+        const allocated = income * c.target/100;
+        const spent = totals[c.key]||0;
+        const remaining = allocated - spent;
+        const remClass = remaining>=0 ? 'remaining-good' : 'remaining-over';
+        return `<div class="stat-card"><div class="num ${remClass}">₹${Math.abs(Math.round(remaining)).toLocaleString('en-IN')}</div><div class="lbl">${c.label} ${remaining>=0?'remaining':'over budget'}</div></div>`;
+      }).join('') + '</div>';
+    }
+    const metersHtml = catMeta.map(c=>{
       const amt = totals[c.key] || 0;
       const pct = base>0 ? Math.round((amt/base)*100) : 0;
       const overTarget = pct > c.target;
@@ -2377,7 +2450,8 @@ function renderBudget(){
         <div class="meter-label"><span>${c.label} <span class="tag">target ${c.target}%</span></span><b style="${overTarget?'color:var(--coral);':''}">₹${amt.toLocaleString('en-IN')} · ${pct}%</b></div>
         <div class="trace"><div class="trace-fill" style="width:${Math.min(100,pct)}%; background:${overTarget?'var(--coral)':c.color};"></div></div>
       </div>`;
-    }).join('') + (income>0 ? '' : '<div class="page-sub" style="margin-top:8px;">Add this month\u2019s income above to see percentages against take-home pay — right now percentages are shown against total spend.</div>');
+    }).join('');
+    breakdownEl.innerHTML = remainingHtml + metersHtml + (income>0 ? '' : '<div class="page-sub" style="margin-top:8px;">Add this month\u2019s income above to see exactly how much you have remaining in each category.</div>');
   }
 
   const listEl = document.getElementById('budgetList');
@@ -2392,13 +2466,61 @@ function renderBudget(){
             <div class="item-date">${fmtDate(t.date)}</div>
             <div class="item-title">${esc(t.desc)} <span class="tag">${catTag[t.category]||t.category}</span></div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:6px;">
             <b class="mono">₹${Number(t.amount).toLocaleString('en-IN')}</b>
+            <button class="icon-btn" onclick="editTransaction('${t.id}')" aria-label="Edit transaction">✎</button>
             <button class="icon-btn" onclick="deleteTransaction('${t.id}')" aria-label="Delete transaction">✕</button>
           </div>
         </div>
       </div>`).join('');
   }
+
+  renderBudgetReport(month, monthTx, totals, totalSpend, income, catMeta);
+}
+function renderBudgetReport(month, monthTx, totals, totalSpend, income, catMeta){
+  const reportEl = document.getElementById('budgetReport');
+  if(!reportEl) return;
+  if(!monthTx.length && income<=0){
+    reportEl.innerHTML = '<div class="empty">Add transactions (and optionally income) to generate this month\u2019s report.</div>';
+    return;
+  }
+  const netSaved = income>0 ? (income - totalSpend) : null;
+  const topExpenses = [...monthTx].sort((a,b)=>b.amount-a.amount).slice(0,5);
+  const [y,m] = month.split('-');
+  const monthLabel = new Date(Number(y), Number(m)-1, 1).toLocaleDateString(undefined,{month:'long', year:'numeric'});
+
+  let verdict = '';
+  if(income>0){
+    const needPct = Math.round((totals.need/income)*100);
+    const wantPct = Math.round((totals.want/income)*100);
+    const savingPct = Math.round((totals.saving/income)*100);
+    const issues = [];
+    if(needPct>50) issues.push('Needs are running over target');
+    if(wantPct>30) issues.push('Wants are running over target');
+    if(savingPct<20) issues.push('Savings are below the 20% target');
+    verdict = issues.length ? ('⚠ ' + issues.join('. ') + '.') : '✓ You\u2019re within target on all three categories this month.';
+  }
+
+  reportEl.innerHTML = `
+    <div class="item-title" style="font-size:1.05rem; margin-bottom:10px;">${monthLabel} summary</div>
+    <div class="stat-row" style="margin-bottom:14px;">
+      <div class="stat-card"><div class="num">₹${Math.round(income).toLocaleString('en-IN')}</div><div class="lbl">Income</div></div>
+      <div class="stat-card"><div class="num">₹${Math.round(totalSpend).toLocaleString('en-IN')}</div><div class="lbl">Total spent</div></div>
+      <div class="stat-card"><div class="num" style="${netSaved!==null && netSaved<0 ? 'color:var(--coral);' : ''}">${netSaved!==null ? '₹'+Math.round(netSaved).toLocaleString('en-IN') : '—'}</div><div class="lbl">Net saved</div></div>
+      <div class="stat-card"><div class="num">${monthTx.length}</div><div class="lbl">Transactions</div></div>
+    </div>
+    ${verdict ? `<div style="margin-bottom:14px; padding:12px 14px; background:var(--panel-2); border-left:3px solid ${verdict.startsWith('⚠')?'var(--coral)':'var(--growth)'}; border-radius:8px; font-size:0.88rem;">${verdict}</div>` : ''}
+    <div class="panel-title" style="margin-top:4px;">Category breakdown</div>
+    ${catMeta.map(c=>{
+      const spent = totals[c.key]||0;
+      const pctOfSpend = totalSpend>0 ? Math.round((spent/totalSpend)*100) : 0;
+      return `<div class="item-body" style="margin-bottom:4px;">${c.label}: ₹${spent.toLocaleString('en-IN')} (${pctOfSpend}% of spending)</div>`;
+    }).join('')}
+    ${topExpenses.length ? `
+      <div class="panel-title" style="margin-top:16px;">Biggest expenses this month</div>
+      ${topExpenses.map((t,i)=>`<div class="item-body" style="margin-bottom:4px;">${i+1}. ${esc(t.desc)} — ₹${Number(t.amount).toLocaleString('en-IN')}</div>`).join('')}
+    ` : ''}
+  `;
 }
 
 /* ============================ RISK CALCULATOR ============================ */
