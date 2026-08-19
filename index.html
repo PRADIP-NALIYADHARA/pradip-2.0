@@ -1199,6 +1199,11 @@
           <div id="budgetBreakdown"></div>
         </div>
 
+        <div class="panel" id="budgetComparisonPanel" style="display:none;">
+          <div class="panel-title">Compared to last month</div>
+          <div id="budgetComparisonContent"></div>
+        </div>
+
         <div class="panel">
           <div class="panel-title">Transactions this month</div>
           <div id="budgetList"></div>
@@ -2475,8 +2480,80 @@ function renderBudget(){
       </div>`).join('');
   }
 
+  renderBudgetComparison(month, totalSpend, income);
   renderBudgetReport(month, monthTx, totals, totalSpend, income, catMeta);
 }
+
+/* ---- Month-over-month comparison with motivational nudge ---- */
+const BUDGET_ENCOURAGE_QUOTES = [
+  "You saved more this month than last — that's not luck, that's discipline compounding.",
+  "\u0907\u0938 \u092e\u0939\u0940\u0928\u0947 \u0906\u092a\u0928\u0947 \u092a\u093f\u091b\u0932\u0947 \u092e\u0939\u0940\u0928\u0947 \u0938\u0947 \u091c\u094d\u092f\u093e\u0926\u093e \u092c\u091a\u093e\u092f\u093e \u2014 \u092f\u0939\u0940 \u0906\u0926\u0924 \u0906\u092a\u0915\u094b \u0905\u092e\u0940\u0930 \u092c\u0928\u093e\u090f\u0917\u0940\u0964",
+  "આ મહિને તમે વધારે બચત કરી — નાની બચત, મોટું ભવિષ્ય.",
+  "Every rupee you didn't spend today is a rupee working for you tomorrow.",
+  "\u092c\u091a\u0924 \u0915\u0940 \u0906\u0926\u0924 \u091b\u094b\u091f\u0940 \u0932\u0917\u0924\u0940 \u0939\u0948, \u0932\u0947\u0915\u093f\u0928 \u092f\u0939\u0940 \u0938\u092e\u092f \u0915\u0947 \u0938\u093e\u0925 \u0938\u092c\u0938\u0947 \u092c\u095c\u0940 \u0924\u093e\u0915\u0924 \u092c\u0928\u0924\u0940 \u0939\u0948\u0964",
+  "તમારી આ મહિનાની બચત આવતીકાલની આઝાદી છે.",
+];
+const BUDGET_GUIDE_QUOTES = [
+  "You spent more this month than last — not a failure, just a signal to look closer at where it went.",
+  "\u0907\u0938 \u092e\u0939\u0940\u0928\u0947 \u0916\u0930\u094d\u091a \u0925\u094b\u0921\u093c\u093e \u091c\u094d\u092f\u093e\u0926\u093e \u0939\u0941\u0906 \u2014 \u0915\u094b\u0908 \u092c\u093e\u0924 \u0928\u0939\u0940\u0902, \u092c\u0938 \u0905\u0917\u0932\u0947 \u092e\u0939\u0940\u0928\u0947 \u0925\u094b\u0921\u093c\u093e \u0938\u0902\u092d\u0932 \u0915\u0930 \u091a\u0932\u0947\u0902\u0964",
+  "આ મહિને ખર્ચ વધ્યો — ચિંતા ના કરો, ફક્ત આવતા મહિને થોડું ધ્યાન રાખો.",
+  "Overspending once is a moment; overspending every month is a pattern — catch it here.",
+  "\u092a\u0948\u0938\u093e \u0939\u093e\u0925 \u0938\u0947 \u092b\u093f\u0938\u0932\u0947 \u0909\u0938\u0938\u0947 \u092a\u0939\u0932\u0947, \u0909\u0938\u0915\u0940 \u0926\u093f\u0936\u093e \u0924\u092f \u0915\u0930\u0928\u093e \u091c\u0930\u0942\u0930\u0940 \u0939\u0948\u0964",
+  "ખર્ચ પર નિયંત્રણ એ સ્વતંત્રતાની પહેલી શરત છે.",
+];
+function renderBudgetComparison(month, totalSpend, income){
+  const panel = document.getElementById('budgetComparisonPanel');
+  const content = document.getElementById('budgetComparisonContent');
+  if(!panel || !content) return;
+
+  const [y, m] = month.split('-').map(Number);
+  let prevY = y, prevM = m - 1;
+  if(prevM === 0){ prevM = 12; prevY -= 1; }
+  const prevMonth = prevY + '-' + String(prevM).padStart(2,'0');
+
+  const prevTx = S.budgetTx.filter(t => t.date && t.date.slice(0,7) === prevMonth);
+  if(!prevTx.length){ panel.style.display = 'none'; return; }
+
+  const prevTotals = { need:0, want:0, saving:0 };
+  prevTx.forEach(t => { prevTotals[t.category] = (prevTotals[t.category]||0) + Number(t.amount||0); });
+  const prevTotalSpend = prevTotals.need + prevTotals.want + prevTotals.saving;
+  const prevIncomeEntry = S.budgetIncome.find(x => x.month === prevMonth);
+  const prevIncome = prevIncomeEntry ? prevIncomeEntry.amount : 0;
+
+  let curSaved, prevSaved, basis;
+  if(income > 0 && prevIncome > 0){
+    curSaved = income - totalSpend; prevSaved = prevIncome - prevTotalSpend; basis = 'income';
+  }else{
+    curSaved = -totalSpend; prevSaved = -prevTotalSpend; basis = 'spend';
+  }
+
+  const diff = curSaved - prevSaved;
+  panel.style.display = 'block';
+  const dayIdx = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+
+  if(diff > 0){
+    const quote = BUDGET_ENCOURAGE_QUOTES[dayIdx % BUDGET_ENCOURAGE_QUOTES.length];
+    const amtText = basis==='income'
+      ? ('₹'+Math.round(diff).toLocaleString('en-IN')+' more saved')
+      : ('₹'+Math.round(diff).toLocaleString('en-IN')+' less spent');
+    content.innerHTML = `<div style="display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--growth-tint); border:1px solid var(--growth); border-radius:10px;">
+      <div style="font-size:1.5rem;">🌱</div>
+      <div><div style="font-weight:700; color:var(--growth); margin-bottom:4px;">${amtText} than last month</div>
+      <div style="font-style:italic; color:var(--ink); font-size:0.9rem; line-height:1.5;">${esc(quote)}</div></div></div>`;
+  }else if(diff < 0){
+    const quote = BUDGET_GUIDE_QUOTES[dayIdx % BUDGET_GUIDE_QUOTES.length];
+    const amtText = basis==='income'
+      ? ('₹'+Math.round(Math.abs(diff)).toLocaleString('en-IN')+' less saved')
+      : ('₹'+Math.round(Math.abs(diff)).toLocaleString('en-IN')+' more spent');
+    content.innerHTML = `<div style="display:flex; align-items:flex-start; gap:12px; padding:14px; background:rgba(201,129,80,0.08); border:1px solid var(--copper); border-radius:10px;">
+      <div style="font-size:1.5rem;">🧭</div>
+      <div><div style="font-weight:700; color:var(--copper); margin-bottom:4px;">${amtText} than last month</div>
+      <div style="font-style:italic; color:var(--ink); font-size:0.9rem; line-height:1.5;">${esc(quote)}</div></div></div>`;
+  }else{
+    content.innerHTML = '<div class="empty">Same as last month — steady.</div>';
+  }
+}
+
 function renderBudgetReport(month, monthTx, totals, totalSpend, income, catMeta){
   const reportEl = document.getElementById('budgetReport');
   if(!reportEl) return;
