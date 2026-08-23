@@ -2987,41 +2987,80 @@ if('speechSynthesis' in window){
   populateVoices();
   window.speechSynthesis.onvoiceschanged = populateVoices;
 }
+function splitTextForSpeech(text){
+  // Mobile browsers (WebKit/iOS especially) are known to silently fail or cut off
+  // on long single utterances. Splitting into sentence-sized chunks and speaking
+  // them in sequence is the standard, reliable workaround.
+  const MAX_CHUNK = 200;
+  const sentences = text.match(/[^.!?।॥]+[.!?।॥]*\s*/g) || [text];
+  const chunks = [];
+  let current = '';
+  for(const sentence of sentences){
+    if((current + sentence).length > MAX_CHUNK && current.length > 0){
+      chunks.push(current.trim());
+      current = sentence;
+    }else{
+      current += sentence;
+    }
+  }
+  if(current.trim()) chunks.push(current.trim());
+  return chunks.length ? chunks : [text];
+}
 function speakText(text){
   if(!text || !text.trim()){ toast('Nothing to read.'); return; }
   if(!('speechSynthesis' in window)){ toast('Speech synthesis is not supported in this browser.'); return; }
   // Refresh the voice list defensively — on mobile, voices often load asynchronously
   // and may not have been populated yet if this page wasn't visited first.
   populateVoices();
+  const chunks = splitTextForSpeech(text);
+  const rate = Number(document.getElementById('ttsRate').value) || 1;
+  const langSel = document.getElementById('ttsLang');
+  const chosenLangValue = langSel ? langSel.value : 'auto';
+  const sel = document.getElementById('ttsVoice');
+
+  SPEECH_USER_PAUSED = false;
+
   const doSpeak = ()=>{
-    const utter = new SpeechSynthesisUtterance(text);
-    const rate = Number(document.getElementById('ttsRate').value) || 1;
-    utter.rate = rate;
-    const langSel = document.getElementById('ttsLang');
-    const chosenLangValue = langSel ? langSel.value : 'auto';
-    const sel = document.getElementById('ttsVoice');
-    const voices = window.speechSynthesis.getVoices();
-    let chosenVoice = null;
-    if(sel && sel.value !== '' && voices[Number(sel.value)]) chosenVoice = voices[Number(sel.value)];
-    if(chosenVoice){
-      utter.voice = chosenVoice;
-      utter.lang = chosenVoice.lang;
-    }else{
-      utter.lang = chosenLangValue === 'auto' ? 'hi-IN' : chosenLangValue;
-    }
+    let chunkIndex = 0;
     let started = false;
-    utter.onstart = ()=>{ started = true; document.getElementById('stopAudioPill').classList.add('show'); };
-    utter.onend = ()=> document.getElementById('stopAudioPill').classList.remove('show');
-    utter.onerror = ()=> document.getElementById('stopAudioPill').classList.remove('show');
-    window.speechSynthesis.speak(utter);
+    function speakNextChunk(){
+      if(chunkIndex >= chunks.length){
+        document.getElementById('stopAudioPill').classList.remove('show');
+        return;
+      }
+      const utter = new SpeechSynthesisUtterance(chunks[chunkIndex]);
+      utter.rate = rate;
+      const voices = window.speechSynthesis.getVoices();
+      let chosenVoice = null;
+      if(sel && sel.value !== '' && voices[Number(sel.value)]) chosenVoice = voices[Number(sel.value)];
+      if(chosenVoice){
+        utter.voice = chosenVoice;
+        utter.lang = chosenVoice.lang;
+      }else{
+        utter.lang = chosenLangValue === 'auto' ? 'hi-IN' : chosenLangValue;
+      }
+      utter.onstart = ()=>{ started = true; document.getElementById('stopAudioPill').classList.add('show'); };
+      utter.onend = ()=>{
+        // On some browsers, a buggy pause() fires this "end" event even though
+        // the audio didn't really finish. If the user just paused, treat this
+        // as a pause, not real completion — don't jump ahead to the next chunk.
+        if(SPEECH_USER_PAUSED) return;
+        chunkIndex++; speakNextChunk();
+      };
+      utter.onerror = ()=>{ document.getElementById('stopAudioPill').classList.remove('show'); };
+      window.speechSynthesis.speak(utter);
+    }
+    SPEECH_RESUME_CURRENT_CHUNK = speakNextChunk;
+    speakNextChunk();
     // Some mobile browsers silently drop the speak() call with no event at all.
     // If nothing has happened after a beat, tell the person what's likely going on.
     setTimeout(()=>{
       if(!started && !window.speechSynthesis.speaking && !window.speechSynthesis.pending){
+        const voices = window.speechSynthesis.getVoices();
         if(!voices.length){
           toast('No voices found on this device — check "Show all voices" on the Text→Audio page.');
         }else{
-          toast('Audio did not start. Some mobile browsers block this until you\u2019ve used the Text→Audio page once — try that page first.');
+          toast('Audio did not start — check your phone isn\u2019t on silent/mute, then try again.');
         }
       }
     }, 1200);
@@ -3036,6 +3075,8 @@ function speakText(text){
     doSpeak();
   }
 }
+let SPEECH_USER_PAUSED = false;
+let SPEECH_RESUME_CURRENT_CHUNK = null;
 function pauseSpeak(){
   if(!('speechSynthesis' in window)) return;
   if(!window.speechSynthesis.speaking){
@@ -3045,22 +3086,36 @@ function pauseSpeak(){
   if(window.speechSynthesis.paused){
     return; // already paused
   }
+  SPEECH_USER_PAUSED = true;
   window.speechSynthesis.pause();
   // Android Chrome has a long-standing, well-known bug where pause() sometimes
-  // has no effect at all. Verify it actually paused, and say so honestly if not.
+  // has no effect, or fires onend as if the utterance finished. Verify what
+  // actually happened and recover gracefully either way.
   setTimeout(()=>{
     if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){
+      // pause() had no real effect — we're not actually paused, so clear the flag
+      // so chunk chaining behaves normally again.
+      SPEECH_USER_PAUSED = false;
       toast('Pause isn\u2019t supported reliably on this browser — use Stop instead.');
+    }else if(!window.speechSynthesis.speaking && !window.speechSynthesis.paused){
+      // The buggy "pause fires onend" case: nothing is speaking or paused anymore.
+      // Our onend guard already stopped it from jumping ahead — let the person
+      // know plainly rather than leaving it looking frozen.
+      SPEECH_USER_PAUSED = false;
+      toast('This browser stopped audio instead of pausing it — tap Play to continue from the book/text.');
     }
   }, 300);
 }
 function resumeSpeak(){
   if(!('speechSynthesis' in window)) return;
-  if(!window.speechSynthesis.paused){
+  if(!SPEECH_USER_PAUSED && !window.speechSynthesis.paused){
     toast('Nothing is paused right now.');
     return;
   }
-  window.speechSynthesis.resume();
+  if(window.speechSynthesis.paused){
+    window.speechSynthesis.resume();
+  }
+  SPEECH_USER_PAUSED = false;
   setTimeout(()=>{
     if(window.speechSynthesis.paused){
       toast('Resume isn\u2019t working on this browser — try Stop, then Play again.');
@@ -3069,6 +3124,7 @@ function resumeSpeak(){
 }
 function stopSpeak(){
   if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  SPEECH_USER_PAUSED = false;
   document.getElementById('stopAudioPill').classList.remove('show');
 }
 
