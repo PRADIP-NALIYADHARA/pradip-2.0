@@ -1040,7 +1040,10 @@
             <div class="field"><label>Author (optional)</label><input type="text" id="bookAuthor" placeholder="James Clear"></div>
           </div>
           <div class="field"><label>In-depth notes / summary</label><textarea id="bookDetails" style="min-height:140px" placeholder="Paste or write the detailed notes for this book here..."></textarea></div>
-          <button class="btn" onclick="addBook()">Save book</button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn" id="bookSubmitBtn" onclick="addBook()">Save book</button>
+            <button class="btn secondary" id="bookCancelEditBtn" onclick="cancelEditBook()" style="display:none;">Cancel edit</button>
+          </div>
         </div>
 
         <div class="panel">
@@ -2202,19 +2205,49 @@ function renderMeditation(){
 }
 
 /* ============================ READING / BOOKS ============================ */
+let EDITING_BOOK_ID = null;
 async function addBook(){
   const title = document.getElementById('bookTitle').value.trim();
   const author = document.getElementById('bookAuthor').value.trim();
   const details = document.getElementById('bookDetails').value.trim();
   if(!title){ toast('Enter a book title.'); return; }
+  if(EDITING_BOOK_ID){
+    const b = S.books.find(x=>x.id===EDITING_BOOK_ID);
+    if(b){ b.title=title; b.author=author; b.details=details; }
+    await saveKey('reading-books', S.books);
+    cancelEditBook();
+    renderBooks(); toast('Book updated.');
+    return;
+  }
   S.books.unshift({ id: uid(), title, author, details, open:false });
   await saveKey('reading-books', S.books);
   document.getElementById('bookTitle').value=''; document.getElementById('bookAuthor').value=''; document.getElementById('bookDetails').value='';
   renderBooks(); toast('Book saved.');
 }
+function editBook(id){
+  const b = S.books.find(x=>x.id===id);
+  if(!b) return;
+  EDITING_BOOK_ID = id;
+  document.getElementById('bookTitle').value = b.title;
+  document.getElementById('bookAuthor').value = b.author || '';
+  document.getElementById('bookDetails').value = b.details || '';
+  document.getElementById('bookSubmitBtn').textContent = 'Update book';
+  document.getElementById('bookCancelEditBtn').style.display = 'inline-block';
+  const titleEl = document.getElementById('bookTitle');
+  if(titleEl && typeof titleEl.scrollIntoView === 'function'){
+    try{ titleEl.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(e){}
+  }
+}
+function cancelEditBook(){
+  EDITING_BOOK_ID = null;
+  document.getElementById('bookTitle').value=''; document.getElementById('bookAuthor').value=''; document.getElementById('bookDetails').value='';
+  document.getElementById('bookSubmitBtn').textContent = 'Save book';
+  document.getElementById('bookCancelEditBtn').style.display = 'none';
+}
 async function deleteBook(id){
   S.books = S.books.filter(x=>x.id!==id);
   await saveKey('reading-books', S.books);
+  if(EDITING_BOOK_ID===id) cancelEditBook();
   renderBooks();
 }
 function toggleBook(id){
@@ -2237,7 +2270,10 @@ function renderBooks(){
           <div class="item-title">${esc(b.title)}</div>
           ${b.author ? `<div class="book-author">${esc(b.author)}</div>` : ''}
         </div>
-        <button class="icon-btn" onclick="event.stopPropagation(); deleteBook('${b.id}')" aria-label="Delete book">✕</button>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <button class="icon-btn" onclick="event.stopPropagation(); editBook('${b.id}')" aria-label="Edit book">✎</button>
+          <button class="icon-btn" onclick="event.stopPropagation(); deleteBook('${b.id}')" aria-label="Delete book">✕</button>
+        </div>
       </div>
       <div class="book-details ${b.open?'open':''}">
         <div class="item-body" style="white-space:pre-wrap; margin-top:8px;">${esc(b.details) || '<i>No notes yet.</i>'}</div>
@@ -2946,26 +2982,51 @@ if('speechSynthesis' in window){
 function speakText(text){
   if(!text || !text.trim()){ toast('Nothing to read.'); return; }
   if(!('speechSynthesis' in window)){ toast('Speech synthesis is not supported in this browser.'); return; }
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  const rate = Number(document.getElementById('ttsRate').value) || 1;
-  utter.rate = rate;
-  const langSel = document.getElementById('ttsLang');
-  const chosenLangValue = langSel ? langSel.value : 'auto';
-  const sel = document.getElementById('ttsVoice');
-  const voices = window.speechSynthesis.getVoices();
-  let chosenVoice = null;
-  if(sel && sel.value !== '' && voices[Number(sel.value)]) chosenVoice = voices[Number(sel.value)];
-  if(chosenVoice){
-    utter.voice = chosenVoice;
-    utter.lang = chosenVoice.lang;
+  // Refresh the voice list defensively — on mobile, voices often load asynchronously
+  // and may not have been populated yet if this page wasn't visited first.
+  populateVoices();
+  const doSpeak = ()=>{
+    const utter = new SpeechSynthesisUtterance(text);
+    const rate = Number(document.getElementById('ttsRate').value) || 1;
+    utter.rate = rate;
+    const langSel = document.getElementById('ttsLang');
+    const chosenLangValue = langSel ? langSel.value : 'auto';
+    const sel = document.getElementById('ttsVoice');
+    const voices = window.speechSynthesis.getVoices();
+    let chosenVoice = null;
+    if(sel && sel.value !== '' && voices[Number(sel.value)]) chosenVoice = voices[Number(sel.value)];
+    if(chosenVoice){
+      utter.voice = chosenVoice;
+      utter.lang = chosenVoice.lang;
+    }else{
+      utter.lang = chosenLangValue === 'auto' ? 'hi-IN' : chosenLangValue;
+    }
+    let started = false;
+    utter.onstart = ()=>{ started = true; document.getElementById('stopAudioPill').classList.add('show'); };
+    utter.onend = ()=> document.getElementById('stopAudioPill').classList.remove('show');
+    utter.onerror = ()=> document.getElementById('stopAudioPill').classList.remove('show');
+    window.speechSynthesis.speak(utter);
+    // Some mobile browsers silently drop the speak() call with no event at all.
+    // If nothing has happened after a beat, tell the person what's likely going on.
+    setTimeout(()=>{
+      if(!started && !window.speechSynthesis.speaking && !window.speechSynthesis.pending){
+        if(!voices.length){
+          toast('No voices found on this device — check "Show all voices" on the Text→Audio page.');
+        }else{
+          toast('Audio did not start. Some mobile browsers block this until you\u2019ve used the Text→Audio page once — try that page first.');
+        }
+      }
+    }, 1200);
+  };
+  // Avoid a known bug where cancel() immediately followed by speak() silently
+  // does nothing on some mobile browsers (notably iOS Safari) when nothing was
+  // previously speaking.
+  if(window.speechSynthesis.speaking || window.speechSynthesis.pending){
+    window.speechSynthesis.cancel();
+    setTimeout(doSpeak, 60);
   }else{
-    utter.lang = chosenLangValue === 'auto' ? 'hi-IN' : chosenLangValue;
+    doSpeak();
   }
-  utter.onstart = ()=> document.getElementById('stopAudioPill').classList.add('show');
-  utter.onend = ()=> document.getElementById('stopAudioPill').classList.remove('show');
-  utter.onerror = ()=> document.getElementById('stopAudioPill').classList.remove('show');
-  window.speechSynthesis.speak(utter);
 }
 function pauseSpeak(){ if('speechSynthesis' in window) window.speechSynthesis.pause(); }
 function resumeSpeak(){ if('speechSynthesis' in window) window.speechSynthesis.resume(); }
