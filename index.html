@@ -1090,7 +1090,7 @@
           </div>
           <div class="page-sub" id="ttsVoiceHint" style="margin-top:-4px; margin-bottom:12px;"></div>
           <div class="tts-controls">
-            <button class="btn" onclick="speakText(document.getElementById('ttsText').value)">▶ Play</button>
+            <button class="btn" id="ttsPlayBtn" onclick="speakText(document.getElementById('ttsText').value)">▶ Play</button>
             <button class="btn secondary" onclick="pauseSpeak()">⏸ Pause</button>
             <button class="btn secondary" onclick="resumeSpeak()">↻ Resume</button>
             <button class="btn secondary" onclick="stopSpeak()">■ Stop</button>
@@ -2906,7 +2906,15 @@ function onTtsBookSelect(){
     return;
   }
   document.getElementById('ttsText').value = book.details;
-  speakText(book.details);
+  // Don't auto-play here: on mobile, a <select> change event usually isn't treated
+  // as a direct user gesture, so speechSynthesis.speak() silently fails if called
+  // from this handler. Loading the text and asking for an explicit tap on Play
+  // (a real click event) works reliably on every device, including mobile.
+  toast('Notes loaded — tap ▶ Play below to listen.');
+  const playBtn = document.getElementById('ttsPlayBtn');
+  if(playBtn && typeof playBtn.scrollIntoView === 'function'){
+    try{ playBtn.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(e){}
+  }
 }
 function toggleVoiceDiagnostics(){
   const box = document.getElementById('voiceDiagnostics');
@@ -3028,8 +3036,37 @@ function speakText(text){
     doSpeak();
   }
 }
-function pauseSpeak(){ if('speechSynthesis' in window) window.speechSynthesis.pause(); }
-function resumeSpeak(){ if('speechSynthesis' in window) window.speechSynthesis.resume(); }
+function pauseSpeak(){
+  if(!('speechSynthesis' in window)) return;
+  if(!window.speechSynthesis.speaking){
+    toast('Nothing is playing right now.');
+    return;
+  }
+  if(window.speechSynthesis.paused){
+    return; // already paused
+  }
+  window.speechSynthesis.pause();
+  // Android Chrome has a long-standing, well-known bug where pause() sometimes
+  // has no effect at all. Verify it actually paused, and say so honestly if not.
+  setTimeout(()=>{
+    if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){
+      toast('Pause isn\u2019t supported reliably on this browser — use Stop instead.');
+    }
+  }, 300);
+}
+function resumeSpeak(){
+  if(!('speechSynthesis' in window)) return;
+  if(!window.speechSynthesis.paused){
+    toast('Nothing is paused right now.');
+    return;
+  }
+  window.speechSynthesis.resume();
+  setTimeout(()=>{
+    if(window.speechSynthesis.paused){
+      toast('Resume isn\u2019t working on this browser — try Stop, then Play again.');
+    }
+  }, 300);
+}
 function stopSpeak(){
   if('speechSynthesis' in window) window.speechSynthesis.cancel();
   document.getElementById('stopAudioPill').classList.remove('show');
