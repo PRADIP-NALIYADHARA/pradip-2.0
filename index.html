@@ -513,6 +513,29 @@
 
   footer{text-align:center; color:var(--ink-dim); font-size:0.74rem; font-family:'JetBrains Mono',monospace; padding:20px; opacity:0.7;}
 
+  /* Reading mode — distraction-free, paper-style contrast regardless of app theme */
+  body.reading-mode .sidebar{display:none;}
+  body.reading-mode .cover-header{display:none;}
+  body.reading-mode #readingPageHead{display:none;}
+  body.reading-mode #bookAddPanel{display:none;}
+  body.reading-mode{background:#faf6ec;}
+  body.reading-mode main{max-width:760px; padding:56px 30px 100px;}
+  body.reading-mode #bookLibraryPanel{
+    background:#fffdf8; border-color:#e6dcc2; box-shadow:none;
+  }
+  body.reading-mode #bookLibraryPanel .panel-title span{color:#8a7a4f;}
+  body.reading-mode .book-card{background:#fffdf8; border-color:#ecdfc0; box-shadow:none;}
+  body.reading-mode .book-card .item-title{color:#1c1a12; font-size:1.05rem;}
+  body.reading-mode .book-author{color:#7a6f52;}
+  body.reading-mode .book-details .item-body{
+    color:#1c1a12; font-weight:500; font-size:1.08rem; line-height:1.9; font-family:'Fraunces',serif;
+  }
+  #readingModeExitBar{
+    position:fixed; top:16px; right:16px; z-index:90;
+  }
+  #readingModeExitBar .btn{box-shadow:0 6px 16px rgba(0,0,0,0.18);}
+  @media (max-width:640px){ body.reading-mode main{padding:56px 18px 90px;} }
+
   /* ---------- Responsive: sidebar -> top bar ---------- */
   @media (max-width:860px){
     .app-shell{flex-direction:column;}
@@ -1024,7 +1047,7 @@
 
       <!-- ================= READING ================= -->
       <section class="page" id="page-reading">
-        <div class="page-head">
+        <div class="page-head" id="readingPageHead">
           <div class="page-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6c-2-1.5-5-2-9-1v13c4-1 7-.5 9 1 2-1.5 5-2 9-1V5c-4-1-7-.5-9 1Z"/><path d="M12 6v13"/></svg></div>
           <div class="page-head-text">
             <div class="eyebrow">Module 10</div>
@@ -1033,7 +1056,7 @@
           </div>
         </div>
 
-        <div class="panel">
+        <div id="bookAddPanel" class="panel">
           <div class="panel-title">Add a book</div>
           <div class="grid-2">
             <div class="field"><label>Book title</label><input type="text" id="bookTitle" placeholder="Atomic Habits"></div>
@@ -1046,11 +1069,18 @@
           </div>
         </div>
 
-        <div class="panel">
-          <div class="panel-title">Library</div>
+        <div id="bookLibraryPanel" class="panel">
+          <div class="panel-title" style="display:flex; align-items:center; justify-content:space-between;">
+            <span>Library</span>
+            <button class="btn small secondary" onclick="toggleReadingMode()">📖 Reading mode</button>
+          </div>
           <div id="booksList"></div>
         </div>
       </section>
+
+      <div id="readingModeExitBar" style="display:none;">
+        <button class="btn small" onclick="toggleReadingMode()">✕ Exit reading mode</button>
+      </div>
 
       <!-- ================= TEXT TO AUDIO ================= -->
       <section class="page" id="page-tts">
@@ -2206,6 +2236,18 @@ function renderMeditation(){
 
 /* ============================ READING / BOOKS ============================ */
 let EDITING_BOOK_ID = null;
+let READING_MODE = false;
+function toggleReadingMode(){
+  if(!READING_MODE && EDITING_BOOK_ID){
+    // Don't leave an in-progress edit stuck behind a hidden panel.
+    cancelEditBook();
+  }
+  READING_MODE = !READING_MODE;
+  document.body.classList.toggle('reading-mode', READING_MODE);
+  const exitBar = document.getElementById('readingModeExitBar');
+  if(exitBar) exitBar.style.display = READING_MODE ? 'block' : 'none';
+  if(READING_MODE) window.scrollTo({ top:0, behavior:'smooth' });
+}
 async function addBook(){
   const title = document.getElementById('bookTitle').value.trim();
   const author = document.getElementById('bookAuthor').value.trim();
